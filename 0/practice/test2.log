@@ -1,0 +1,532 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2022.11.20)  20 NOV 2022 20:16
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**test2
+(./test2
+LaTeX2e <2022-06-01> patch level 5
+L3 programming layer <2022-08-30>
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2021/10/04 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count185
+\c@section=\count186
+\c@subsection=\count187
+\c@subsubsection=\count188
+\c@paragraph=\count189
+\c@subparagraph=\count190
+\c@figure=\count191
+\c@table=\count192
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+(/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2021/02/14 v1.3d Input encoding file
+\inpenc@prehook=\toks16
+\inpenc@posthook=\toks17
+)
+(/usr/share/texlive/texmf-dist/tex/latex/multirow/multirow.sty
+Package: multirow 2021/03/15 v2.8 Span multiple rows of a table
+\multirow@colwidth=\skip49
+\multirow@cntb=\count193
+\multirow@dima=\skip50
+\bigstrutjot=\dimen139
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks18
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 107.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen140
+\Gin@req@width=\dimen141
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2022/04/08 v2.17n AMS math features
+\@mathmargin=\skip51
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen142
+))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen143
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count194
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count195
+\leftroot@=\count196
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count197
+\DOTSCASE@=\count198
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box51
+\strutbox@=\box52
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen144
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count199
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count266
+\dotsspace@=\muskip16
+\c@parentequation=\count267
+\dspbrk@lvl=\count268
+\tag@help=\toks20
+\row@=\count269
+\column@=\count270
+\maxfields@=\count271
+\andhelp@=\toks21
+\eqnshift@=\dimen145
+\alignsep@=\dimen146
+\tagshift@=\dimen147
+\tagwidth@=\dimen148
+\totwidth@=\dimen149
+\lineht@=\dimen150
+\@envbody=\toks22
+\multlinegap=\skip52
+\multlinetaggap=\skip53
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.sty
+Package: biblatex 2022/07/12 v3.18b programmable bibliographies (PK/MW)
+
+(/usr/share/texlive/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/share/texlive/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
+Package: iftex 2022/02/03 v1.0f TeX engine tests
+)
+(/usr/share/texlive/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
+Package: ltxcmds 2020-05-10 v1.25 LaTeX kernel commands for general use (HO)
+)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count272
+)
+(/usr/share/texlive/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/kvsetkeys/kvsetkeys.sty
+Package: kvsetkeys 2019/12/15 v1.18 Key value parser (HO)
+))
+(/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.sty
+Package: logreq 2010/08/04 v1.0 xml request logger
+\lrq@indent=\count273
+
+(/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.def
+File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
+))
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip17
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+\c@tabx@nest=\count274
+\c@listtotal=\count275
+\c@listcount=\count276
+\c@liststart=\count277
+\c@liststop=\count278
+\c@citecount=\count279
+\c@citetotal=\count280
+\c@multicitecount=\count281
+\c@multicitetotal=\count282
+\c@instcount=\count283
+\c@maxnames=\count284
+\c@minnames=\count285
+\c@maxitems=\count286
+\c@minitems=\count287
+\c@citecounter=\count288
+\c@maxcitecounter=\count289
+\c@savedcitecounter=\count290
+\c@uniquelist=\count291
+\c@uniquename=\count292
+\c@refsection=\count293
+\c@refsegment=\count294
+\c@maxextratitle=\count295
+\c@maxextratitleyear=\count296
+\c@maxextraname=\count297
+\c@maxextradate=\count298
+\c@maxextraalpha=\count299
+\c@abbrvpenalty=\count300
+\c@highnamepenalty=\count301
+\c@lownamepenalty=\count302
+\c@maxparens=\count303
+\c@parenlevel=\count304
+\blx@tempcnta=\count305
+\blx@tempcntb=\count306
+\blx@tempcntc=\count307
+\c@blx@maxsection=\count308
+\blx@maxsegment@0=\count309
+\blx@notetype=\count310
+\blx@parenlevel@text=\count311
+\blx@parenlevel@foot=\count312
+\blx@sectionciteorder@0=\count313
+\blx@sectionciteorderinternal@0=\count314
+\blx@entrysetcounter=\count315
+\blx@biblioinstance=\count316
+\labelnumberwidth=\skip54
+\labelalphawidth=\skip55
+\biblabelsep=\skip56
+\bibitemsep=\skip57
+\bibnamesep=\skip58
+\bibinitsep=\skip59
+\bibparsep=\skip60
+\bibhang=\skip61
+\blx@bcfin=\read2
+\blx@bcfout=\write3
+\blx@langwohyphens=\language3
+\c@mincomprange=\count317
+\c@maxcomprange=\count318
+\c@mincompwidth=\count319
+Package biblatex Info: Trying to load biblatex default data model...
+Package biblatex Info: ... file 'blx-dm.def' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/blx-dm.def
+File: blx-dm.def 2022/07/12 v3.18b biblatex localization (PK/MW)
+)
+Package biblatex Info: Trying to load biblatex custom data model...
+Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
+\c@afterword=\count320
+\c@savedafterword=\count321
+\c@annotator=\count322
+\c@savedannotator=\count323
+\c@author=\count324
+\c@savedauthor=\count325
+\c@bookauthor=\count326
+\c@savedbookauthor=\count327
+\c@commentator=\count328
+\c@savedcommentator=\count329
+\c@editor=\count330
+\c@savededitor=\count331
+\c@editora=\count332
+\c@savededitora=\count333
+\c@editorb=\count334
+\c@savededitorb=\count335
+\c@editorc=\count336
+\c@savededitorc=\count337
+\c@foreword=\count338
+\c@savedforeword=\count339
+\c@holder=\count340
+\c@savedholder=\count341
+\c@introduction=\count342
+\c@savedintroduction=\count343
+\c@namea=\count344
+\c@savednamea=\count345
+\c@nameb=\count346
+\c@savednameb=\count347
+\c@namec=\count348
+\c@savednamec=\count349
+\c@translator=\count350
+\c@savedtranslator=\count351
+\c@shortauthor=\count352
+\c@savedshortauthor=\count353
+\c@shorteditor=\count354
+\c@savedshorteditor=\count355
+\c@labelname=\count356
+\c@savedlabelname=\count357
+\c@institution=\count358
+\c@savedinstitution=\count359
+\c@lista=\count360
+\c@savedlista=\count361
+\c@listb=\count362
+\c@savedlistb=\count363
+\c@listc=\count364
+\c@savedlistc=\count365
+\c@listd=\count366
+\c@savedlistd=\count367
+\c@liste=\count368
+\c@savedliste=\count369
+\c@listf=\count370
+\c@savedlistf=\count371
+\c@location=\count372
+\c@savedlocation=\count373
+\c@organization=\count374
+\c@savedorganization=\count375
+\c@origlocation=\count376
+\c@savedoriglocation=\count377
+\c@origpublisher=\count378
+\c@savedorigpublisher=\count379
+\c@publisher=\count380
+\c@savedpublisher=\count381
+\c@language=\count382
+\c@savedlanguage=\count383
+\c@origlanguage=\count384
+\c@savedoriglanguage=\count385
+\c@pageref=\count386
+\c@savedpageref=\count387
+\shorthandwidth=\skip62
+\shortjournalwidth=\skip63
+\shortserieswidth=\skip64
+\shorttitlewidth=\skip65
+\shortauthorwidth=\skip66
+\shorteditorwidth=\skip67
+\locallabelnumberwidth=\skip68
+\locallabelalphawidth=\skip69
+\localshorthandwidth=\skip70
+\localshortjournalwidth=\skip71
+\localshortserieswidth=\skip72
+\localshorttitlewidth=\skip73
+\localshortauthorwidth=\skip74
+\localshorteditorwidth=\skip75
+Package biblatex Info: Trying to load compatibility code...
+Package biblatex Info: ... file 'blx-compat.def' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/blx-compat.def
+File: blx-compat.def 2022/07/12 v3.18b biblatex compatibility (PK/MW)
+)
+Package biblatex Info: Trying to load generic definitions...
+Package biblatex Info: ... file 'biblatex.def' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.def
+File: biblatex.def 2022/07/12 v3.18b biblatex compatibility (PK/MW)
+\c@textcitecount=\count388
+\c@textcitetotal=\count389
+\c@textcitemaxnames=\count390
+\c@biburlbigbreakpenalty=\count391
+\c@biburlbreakpenalty=\count392
+\c@biburlnumpenalty=\count393
+\c@biburlucpenalty=\count394
+\c@biburllcpenalty=\count395
+\biburlbigskip=\muskip18
+\biburlnumskip=\muskip19
+\biburlucskip=\muskip20
+\biburllcskip=\muskip21
+\c@smartand=\count396
+)
+Package biblatex Info: Trying to load bibliography style 'numeric'...
+Package biblatex Info: ... file 'numeric.bbx' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/bbx/numeric.bbx
+File: numeric.bbx 2022/07/12 v3.18b biblatex bibliography style (PK/MW)
+Package biblatex Info: Trying to load bibliography style 'standard'...
+Package biblatex Info: ... file 'standard.bbx' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
+File: standard.bbx 2022/07/12 v3.18b biblatex bibliography style (PK/MW)
+\c@bbx:relatedcount=\count397
+\c@bbx:relatedtotal=\count398
+))
+Package biblatex Info: Trying to load citation style 'numeric'...
+Package biblatex Info: ... file 'numeric.cbx' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/cbx/numeric.cbx
+File: numeric.cbx 2022/07/12 v3.18b biblatex citation style (PK/MW)
+Package biblatex Info: Redefining '\cite'.
+Package biblatex Info: Redefining '\parencite'.
+Package biblatex Info: Redefining '\footcite'.
+Package biblatex Info: Redefining '\footcitetext'.
+Package biblatex Info: Redefining '\smartcite'.
+Package biblatex Info: Redefining '\supercite'.
+Package biblatex Info: Redefining '\textcite'.
+Package biblatex Info: Redefining '\textcites'.
+Package biblatex Info: Redefining '\cites'.
+Package biblatex Info: Redefining '\parencites'.
+Package biblatex Info: Redefining '\smartcites'.
+)
+Package biblatex Info: Trying to load configuration file...
+Package biblatex Info: ... file 'biblatex.cfg' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.cfg
+File: biblatex.cfg 
+)
+Package biblatex Info: Input encoding 'utf8' detected.
+Package biblatex Info: Document encoding is UTF8 ....
+
+(/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2022-08-30 L3 programming layer (loader) 
+
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2022-08-30 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count399
+\l__pdf_internal_box=\box53
+))
+Package biblatex Info: ... and expl3
+(biblatex)             2022-08-30 L3 programming layer (loader) 
+(biblatex)             is new enough (at least 2020/04/06),
+(biblatex)             setting 'casechanger=expl3'.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/blx-case-expl3.sty
+(/usr/share/texlive/texmf-dist/tex/latex/l3packages/xparse/xparse.sty
+Package: xparse 2022-06-22 L3 Experimental document command parser
+)
+Package: blx-case-expl3 2022/07/12 v3.18b expl3 case changing code for biblatex
+
+))
+\@quotelevel=\count400
+\@quotereset=\count401
+
+
+LaTeX Warning: Unused global option(s):
+    [14pt].
+
+(./test2.aux)
+\openout1 = `test2.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
+LaTeX Font Info:    ... okay on input line 13.
+
+(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count402
+\scratchdimen=\dimen151
+\scratchbox=\box54
+\nofMPsegments=\count403
+\nofMParguments=\count404
+\everyMPshowfont=\toks24
+\MPscratchCnt=\count405
+\MPscratchDim=\dimen152
+\MPnumerator=\count406
+\makeMPintoPDFobject=\count407
+\everyMPtoPDFconversion=\toks25
+) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+Package biblatex Info: Trying to load language 'english'...
+Package biblatex Info: ... file 'english.lbx' found.
+
+(/usr/share/texlive/texmf-dist/tex/latex/biblatex/lbx/english.lbx
+File: english.lbx 2022/07/12 v3.18b biblatex localization (PK/MW)
+)
+Package biblatex Info: Input encoding 'utf8' detected.
+Package biblatex Info: Automatic encoding selection.
+(biblatex)             Assuming data encoding 'utf8'.
+\openout3 = `test2.bcf'.
+
+Package biblatex Info: Trying to load bibliographic data...
+Package biblatex Info: ... file 'test2.bbl' not found.
+
+No file test2.bbl.
+Package biblatex Info: Reference section=0 on input line 13.
+Package biblatex Info: Reference segment=0 on input line 13.
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
+<images/dimpu.jpg, id=17, 758.835pt x 758.835pt>
+File: images/dimpu.jpg Graphic file (type jpg)
+<use images/dimpu.jpg>
+Package pdftex.def Info: images/dimpu.jpg  used on input line 119.
+(pdftex.def)             Requested size: 224.2479pt x 224.24806pt.
+
+
+LaTeX Warning: Citation 'ismail2017identification' on page 3 undefined on input
+ line 123.
+
+
+LaTeX Warning: Citation 'glob' on page 3 undefined on input line 123.
+
+[3 <./images/dimpu.jpg>]
+
+LaTeX Warning: Citation 'sarma2009some' on page 4 undefined on input line 143.
+
+
+LaTeX Warning: Empty bibliography on input line 145.
+
+[4] (./test2.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+Package biblatex Warning: Please (re)run Biber on the file:
+(biblatex)                test2
+(biblatex)                and rerun LaTeX afterwards.
+
+Package logreq Info: Writing requests to 'test2.run.xml'.
+\openout1 = `test2.run.xml'.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 10199 strings out of 477035
+ 192416 string characters out of 5828403
+ 947406 words of memory out of 5000000
+ 31265 multiletter control sequences out of 15000+600000
+ 475682 words of font info for 50 fonts, out of 8000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 60i,9n,68p,674b,1135s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ </home/glob/.texlive2022/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600p
+k></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/te
+xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on test2.pdf (4 pages, 238453 bytes).
+PDF statistics:
+ 88 PDF objects out of 1000 (max. 8388607)
+ 53 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+

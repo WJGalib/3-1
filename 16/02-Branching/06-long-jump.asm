@@ -1,0 +1,16 @@
+.MODEL SMALL 
+.STACK 100H 
+.DATA  
+.CODE 
+MAIN PROC
+    MOV AL, 3DH   
+    MOV DX, FF3DH
+    MOV BL, 81H
+    MOV BH, 7FH
+    OR AL, 81H
+    AND DX, 7FH
+    
+	MOV AH, 4CH
+    INT 21H
+MAIN ENDP 
+END MAIN 

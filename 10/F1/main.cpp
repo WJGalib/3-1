@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstring>
+#define SYM_LEN 100
+
 using namespace std;
 
 
@@ -45,8 +47,8 @@ class ScopeTable {
 
     inline static int currId = 0;
 
-    static unsigned int h1 (char* a) {
-        unsigned int h = 0, i, len = strlen(a);
+    static unsigned long long int h1 (char* a) {
+        unsigned long long int h = 0, i, len = strlen(a);
         for (i=0; i<len; i++) h = a[i] + (h<<6) + (h<<16) - h;
         return h;
     };
@@ -81,8 +83,12 @@ public:
         return this->parentScope;
     };
 
+    int getId() {
+        return this->id;
+    };
+
     int add (SymbolInfo* x) {
-        int i = h1(x->getName()) % N;
+        unsigned long long int i = h1(x->getName()) % N;
         if (!T[i]) T[i] = x;
         else {
             SymbolInfo* r = T[i];
@@ -93,12 +99,13 @@ public:
     };
 
     int add (char* name, char* type) {
+        if (lookUp(name)) return 0;
         SymbolInfo* x = new SymbolInfo (name, type);
         return add(x);
     };
 
     SymbolInfo* lookUp (char* key) {
-        int i = h1(key) % N;
+        unsigned long long int i = h1(key) % N;
         if (!T[i]) return nullptr;
         for (SymbolInfo* r = T[i]; r; r = r->getNext()) 
             if (!strcmp(r->getName(), key)) return r;
@@ -106,7 +113,7 @@ public:
     };
 
     bool deleteKey (char* key) {
-        int i = h1(key) % N;
+        unsigned long long int i = h1(key) % N;
         if (!T[i]) return false;
         if (!strcmp(T[i]->getName(), key)) {
             SymbolInfo* d = T[i];
@@ -129,14 +136,14 @@ public:
     };
 
     void print() {
-        cout << "ScopeTable# " << this->id << endl;
+        cout << "\tScopeTable# " << this->id << endl;
         for (int i=0; i<N; i++) {
-            cout << i+1 << "--> ";
+            cout << "\t" << i+1 << "--> ";
             if (!T[i]) cout << endl;
             else {
                 // cout << T[i]->getName() << "  ";
                 for (SymbolInfo* r = T[i]; r; r = r->getNext())
-                    cout << "<" << r->getName() << "," << r->getType() << ">" << " ";
+                    cout << "<" << r->getName() << "," << r->getType() << "> ";
                 cout << endl;
             };
         };
@@ -170,10 +177,18 @@ public:
         curr = newScope;
     };
 
-    void exitScope() {
+    bool exitScope() {
         ScopeTable* currParent = curr->getParent();
-        delete curr;
-        this->curr = currParent;
+        if (currParent) {
+            delete curr;
+            this->curr = currParent;
+            return true;
+        };
+        return false;
+    };
+
+    int getCurrScopeId() {
+        return curr->getId();
     };
 
     void insert (SymbolInfo* symbol) {
@@ -192,37 +207,92 @@ public:
         return lookUpScope (name, this->curr);
     };
 
+    void printCurrScope() {
+        curr->print();
+    };
 
+    void printAllScope() {
+        ScopeTable* scope = curr;
+        while (scope) {
+            scope->print();
+            scope = scope->getParent();
+        }; 
+    };
 };
 
+
+
+// int main() {
+//     srand (time(0));
+//     const int SIZE = 23;
+//     int i, j;
+//     ScopeTable* T = new ScopeTable (30);
+//     for (i=0; i<23; i++) {
+//         char *s = new char[8], *ss = new char[8];
+//         for (j=0; j<7; j++) ss[6-j] = s[j] = 97 + abs(rand()) % 25;
+//         s[7] = '\0', ss[7] = '\0';
+//         cout << T->add (s, ss) + 1 << endl;
+//     };
+//     T->print();
+//     for (i=0; i<4; i++) { 
+//         cout << "find/delete who? " << endl;
+//         char* f = new char[8];
+//         cin >> f;
+//         SymbolInfo* r = T->lookUp(f);
+//         T->deleteKey(r->getName());
+//         // T->deleteKey(f);
+//         T->print();
+//     };
+//     for (i=0; i<3; i++) {
+//         cout << "insert: ";
+//         char *f = new char[8], *ff = new char[8];
+//         cin >> f >> ff;
+//         cout << T->add(f, ff) << endl;
+//         T->print();
+//     };
+//     delete T;
+//     return 0;
+// };
+
 int main() {
-    srand (time(0));
-    const int SIZE = 23;
-    int i, j;
-    ScopeTable* T = new ScopeTable (30);
-    for (i=0; i<23; i++) {
-        char *s = new char[8], *ss = new char[8];
-        for (j=0; j<7; j++) ss[6-j] = s[j] = 97 + abs(rand()) % 25;
-        s[7] = '\0', ss[7] = '\0';
-        cout << T->add (s, ss) + 1 << endl;
+    int bSize, i, j;
+    char *opt = new char[5];
+
+    cin >> bSize;
+    SymbolTable* T = new SymbolTable(bSize);
+
+    while (true) {
+        cin >> opt;
+        if (!strcasecmp(opt, "I")) {
+            char *name = new char[SYM_LEN], *type = new char[SYM_LEN];
+            cin >> name >> type;
+            T->insert(name, type);
+        } else if (!strcasecmp(opt, "L")) {
+            char *name = new char[SYM_LEN];
+            cin >> name;
+            SymbolInfo* s = T->lookUp(name);
+            if (s) cout << T->lookUp(name)->getName() << endl;
+            else cout << "'" <<  name << "' not found in any of the ScopeTables" << endl;
+        } else if (!strcasecmp(opt, "D")) {
+            char *name = new char[SYM_LEN];
+            cin >> name;
+            if (T->remove(name)) cout << "deleted " << name << endl;
+            else cout << "Not found in the current ScopeTable" << endl;
+        } else if (!strcasecmp(opt, "P")) {
+            cin >> opt;
+            if (!strcasecmp(opt, "A")) T->printAllScope();
+            else if (!strcasecmp(opt, "C")) T->printCurrScope();
+        } else if (!strcasecmp(opt, "S")) {
+            T->enterScope();
+            cout << "ScopeTable# " << T->getCurrScopeId() << "created" << endl;
+        } else if (!strcasecmp(opt, "E")) {
+            int cs = T->getCurrScopeId();
+            if (T->exitScope()) cout << "ScopeTable# " << cs << " removed" << endl;
+            else cout << "ScopeTable# " << cs << " cannot be removed" << endl;
+        } else if (!strcasecmp(opt, "Q")) {
+            break;
+        };
     };
-    T->print();
-    for (i=0; i<4; i++) { 
-        cout << "find/delete who? " << endl;
-        char* f = new char[8];
-        cin >> f;
-        SymbolInfo* r = T->lookUp(f);
-        T->deleteKey(r->getName());
-        // T->deleteKey(f);
-        T->print();
-    };
-    for (i=0; i<3; i++) {
-        cout << "insert: ";
-        char *f = new char[8], *ff = new char[8];
-        cin >> f >> ff;
-        cout << T->add(f, ff) << endl;
-        T->print();
-    };
-    delete T;
+
     return 0;
 };

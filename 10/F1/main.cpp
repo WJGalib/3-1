@@ -67,11 +67,13 @@ public:
         this->parentScope = nullptr;
         this->T = new SymbolInfo* [N];
         for (int i=0; i<N; i++) T[i] = nullptr;
+        cout << "\tScopeTable# " << this->id << " created" << endl;
     };
 
     ~ScopeTable() {
         for (int i=0; i<N; i++) if (T[i]) deleteChain(T[i]);
         delete[] T;
+        cout << "\tScopeTable# " << this->id << " removed" << endl;
         //cout << "table destroyed!!" << endl;
     };
 
@@ -87,47 +89,59 @@ public:
         return this->id;
     };
 
-    int add (SymbolInfo* x) {
+    bool insert (SymbolInfo* x) {
         unsigned long long int i = h1(x->getName()) % N;
+        int j = 0;
         if (!T[i]) T[i] = x;
         else {
             SymbolInfo* r = T[i];
-            while (r->getNext()) r = r->getNext();
-            r->setNext(x);
+            while (r->getNext()) r = r->getNext(), j++;
+            r->setNext(x), j++;
         };
-        return i;
+        cout << "\tInserted in ScopeTable# " << this->id << " at position " << i+1 << ", " << j+1 << endl;
+        return true;
     };
 
-    int add (char* name, char* type) {
-        if (lookUp(name)) return 0;
+    bool insert (char* name, char* type) {
+        if (lookUp(name, true)) return false;
         SymbolInfo* x = new SymbolInfo (name, type);
-        return add(x);
+        return insert(x);
     };
 
-    SymbolInfo* lookUp (char* key) {
+    SymbolInfo* lookUp (char* key, bool quiet = false) {
         unsigned long long int i = h1(key) % N;
+        int j = 0;
         if (!T[i]) return nullptr;
-        for (SymbolInfo* r = T[i]; r; r = r->getNext()) 
-            if (!strcmp(r->getName(), key)) return r;
+        for (SymbolInfo* r = T[i]; r; r = r->getNext(), j++) 
+            if (!strcmp(r->getName(), key)) {
+                if (!quiet) cout << "\t'" << key << "' found in ScopeTable# " 
+                                 << this->id << " at position " << i+1 << ", " << j+1 << endl;
+                return r;
+            };
         return nullptr;
     };
 
     bool deleteKey (char* key) {
         unsigned long long int i = h1(key) % N;
+        int j = 0;
         if (!T[i]) return false;
         if (!strcmp(T[i]->getName(), key)) {
             SymbolInfo* d = T[i];
             T[i] = d->getNext();
             delete d;
+            cout << "\tDeleted '" << key << "' from ScopeTable# " 
+                     << this->id << " at position " << i+1 << ", " << j+1 << endl;
             return true;
         };
-        for (SymbolInfo* r = T[i]; r->getNext(); r = r->getNext()) {
+        for (SymbolInfo* r = T[i]; r->getNext(); r = r->getNext(), j++) {
             if (!strcmp(r->getNext()->getName(), key)) {
                 //cout << __LINE__ << endl;
                 SymbolInfo* d = r->getNext();
                 r->setNext (d->getNext());
                 delete d;
                 //cout << __LINE__ << endl;
+                cout << "\tDeleted '" << key << "' from ScopeTable# " 
+                     << this->id << " at position " << i+1 << ", " << j+1 << endl;
                 return true;
             };
         };
@@ -164,11 +178,21 @@ class SymbolTable {
         return s; 
     };
 
+    static void deleteList (ScopeTable* s) {
+        ScopeTable* p = s->getParent();
+        delete s;
+        if (p) deleteList(p);
+    };
+
 public:
 
     SymbolTable (int bSize) {
         this->bSize = bSize;
         curr = new ScopeTable (bSize);
+    };
+
+    ~SymbolTable() {
+        deleteList(curr);
     };
 
     void enterScope() {
@@ -191,12 +215,12 @@ public:
         return curr->getId();
     };
 
-    void insert (SymbolInfo* symbol) {
-        curr->add(symbol);
+    bool insert (SymbolInfo* symbol) {
+        return curr->insert(symbol);
     };
 
-    void insert (char* name, char* type) {
-        curr->add (name, type);
+    bool insert (char* name, char* type) {
+        return curr->insert (name, type);
     };
 
     bool remove (char* name) {
@@ -266,30 +290,26 @@ int main() {
         if (!strcasecmp(opt, "I")) {
             char *name = new char[SYM_LEN], *type = new char[SYM_LEN];
             cin >> name >> type;
-            T->insert(name, type);
+            if (!T->insert(name, type)) cout << "\t'" <<  name << "' already exists in the current ScopeTable" << endl;
         } else if (!strcasecmp(opt, "L")) {
             char *name = new char[SYM_LEN];
             cin >> name;
-            SymbolInfo* s = T->lookUp(name);
-            if (s) cout << T->lookUp(name)->getName() << endl;
-            else cout << "'" <<  name << "' not found in any of the ScopeTables" << endl;
+            if (!T->lookUp(name)) cout << "\t'" <<  name << "' not found in any of the ScopeTables" << endl;
         } else if (!strcasecmp(opt, "D")) {
             char *name = new char[SYM_LEN];
             cin >> name;
-            if (T->remove(name)) cout << "deleted " << name << endl;
-            else cout << "Not found in the current ScopeTable" << endl;
+            if (!T->remove(name)) cout << "\tNot found in the current ScopeTable" << endl;
         } else if (!strcasecmp(opt, "P")) {
             cin >> opt;
             if (!strcasecmp(opt, "A")) T->printAllScope();
             else if (!strcasecmp(opt, "C")) T->printCurrScope();
         } else if (!strcasecmp(opt, "S")) {
             T->enterScope();
-            cout << "ScopeTable# " << T->getCurrScopeId() << "created" << endl;
         } else if (!strcasecmp(opt, "E")) {
             int cs = T->getCurrScopeId();
-            if (T->exitScope()) cout << "ScopeTable# " << cs << " removed" << endl;
-            else cout << "ScopeTable# " << cs << " cannot be removed" << endl;
+            if (!T->exitScope()) cout << "\tScopeTable# " << cs << " cannot be removed" << endl;
         } else if (!strcasecmp(opt, "Q")) {
+            delete T;
             break;
         };
     };

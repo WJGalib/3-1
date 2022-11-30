@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include "SymbolTable.hpp"
+#include "1905084_SymbolTable.hpp"
 
 using namespace std;
 

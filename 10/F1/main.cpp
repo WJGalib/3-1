@@ -27,7 +27,7 @@ int main() {
     for (i=1; true; i++) {
         cin.getline (line, lInput);
         char* l = new char [lInput];
-        strcpy(l, line), opt = strtok(l, " ");
+        strcpy(l, line), l[strcspn (l, "\n\r")] = '\0', opt = strtok(l, " ");
         cout << "Cmd " << i << ": " << line << endl;
 
         if (!strcasecmp(opt, "I")) {

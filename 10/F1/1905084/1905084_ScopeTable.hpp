@@ -12,9 +12,9 @@ class ScopeTable {
 
     inline static int currId = 0;
 
-    static unsigned long long int h1 (char* a) {
-        unsigned long long int h = 0, i, len = strlen(a);
-        for (i=0; i<len; i++) h = a[i] + (h<<6) + (h<<16) - h;
+    static unsigned int h1 (char* a, int N) {
+        unsigned int h = 0, i, len = strlen(a);
+        for (i=0; i<len; i++) h = (a[i] + (h<<6) + (h<<16) - h) % N;
         return h;
     };
 
@@ -55,7 +55,7 @@ public:
     };
 
     bool insert (SymbolInfo* x) {
-        unsigned long long int i = h1(x->getName()) % N;
+        unsigned int i = h1(x->getName(), N) % N;
         int j = 0;
         if (!T[i]) T[i] = x;
         else {
@@ -74,7 +74,7 @@ public:
     };
 
     SymbolInfo* lookUp (char* key, bool quiet = false) {
-        unsigned long long int i = h1(key) % N;
+        unsigned int i = h1(key, N) % N;
         int j = 0;
         if (!T[i]) return nullptr;
         for (SymbolInfo* r = T[i]; r; r = r->getNext(), j++) 
@@ -87,7 +87,7 @@ public:
     };
 
     bool deleteKey (char* key) {
-        unsigned long long int i = h1(key) % N;
+        unsigned int i = h1(key, N) % N;
         int j = 0;
         if (!T[i]) return false;
         if (!strcmp(T[i]->getName(), key)) {

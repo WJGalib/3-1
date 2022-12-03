@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int main() {
+int main() { 
 
     const int lSym = 64, lInput = 256;
     const char mismatchStr[64] = "\tNumber of parameters mismatch for the command ";

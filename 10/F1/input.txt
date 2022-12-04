@@ -1,41 +1,34 @@
 7
-I foo FUNCTION
-I i VAR
-L i
-L i j
-L j
-I 23 NUMBER
+I a a
+I f f
+I h h
+I k k
+I l l
+I g g
+I c c
 P C
-D i
-D j
+I e e
+I b b
+I i i
+I f c
+I d d
+I j j
+I o o
+I v v
 P A
-S
-I <= RELOP
-I == RELOP
+D v
 P A
-I >= RELOP
-P C
-I <= RELOP
-I foo FUNCTION
-D ==
-D 23
-D
+I v v
 P A
-L 23
-S
-I x VAR
-I y VAR
+D o
 P A
-L foo
-E
-I num VAR
-S
-I true BOOL
-I a
+I o o
 P A
-E
-E
-E
-S
+D f
+I m m
 P A
+L o
+L k
+L n
+L h
 Q

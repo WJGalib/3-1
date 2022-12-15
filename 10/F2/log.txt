@@ -1,0 +1,360 @@
+Line# 1: TOKEN <VOID> Lexeme void found
+Line# 1: TOKEN <ID> Lexeme main found
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 1: TOKEN <LPAREN> Lexeme ( found
+Line# 1: TOKEN <RPAREN> Lexeme ) found
+Line# 1: TOKEN <LCURL> Lexeme { found
+Line# 2: TOKEN <INT> Lexeme int found
+Line# 2: TOKEN <ID> Lexeme x found
+	ScopeTable# 2
+	1--> <x,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 2: TOKEN <COMMA> Lexeme , found
+Line# 2: TOKEN <ID> Lexeme y found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 2: TOKEN <SEMICOLON> Lexeme ; found
+Line# 3: TOKEN <ID> Lexeme x found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 3: TOKEN <ASSIGNOP> Lexeme = found
+Line# 3: TOKEN <ID> Lexeme x found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 3: TOKEN <ADDOP> Lexeme + found
+Line# 3: TOKEN <CONST_INT> Lexeme 1 found
+Line# 3: TOKEN <SEMICOLON> Lexeme ; found
+Line# 4: TOKEN <ID> Lexeme y found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 4: TOKEN <ASSIGNOP> Lexeme = found
+Line# 4: TOKEN <ID> Lexeme y found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 4: TOKEN <MULOP> Lexeme * found
+Line# 4: TOKEN <CONST_INT> Lexeme 2 found
+Line# 4: TOKEN <SEMICOLON> Lexeme ; found
+Line# 6: TOKEN <FLOAT> Lexeme float found
+Line# 6: TOKEN <ID> Lexeme f found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 6: TOKEN <SEMICOLON> Lexeme ; found
+Line# 7: TOKEN <ID> Lexeme f found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 7: TOKEN <ASSIGNOP> Lexeme = found
+Line# 7: TOKEN <ID> Lexeme f found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 7: TOKEN <ADDOP> Lexeme - found
+Line# 7: TOKEN <CONST_FLOAT> Lexeme 3.14 found
+Line# 7: TOKEN <SEMICOLON> Lexeme ; found
+Line# 8: TOKEN <ID> Lexeme f found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 8: TOKEN <ASSIGNOP> Lexeme = found
+Line# 8: TOKEN <ID> Lexeme f found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 8: TOKEN <MULOP> Lexeme * found
+Line# 8: TOKEN <CONST_FLOAT> Lexeme 2.81E0 found
+Line# 8: TOKEN <SEMICOLON> Lexeme ; found
+Line# 10: TOKEN <CHAR> Lexeme char found
+Line# 10: TOKEN <ID> Lexeme ch found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	6--> <ch,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 10: TOKEN <ASSIGNOP> Lexeme = found
+Line# 10: TOKEN <CONST_CHAR> Lexeme z found
+Line# 10: TOKEN <SEMICOLON> Lexeme ; found
+Line# 11: TOKEN <ID> Lexeme ch found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	6--> <ch,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 11: TOKEN <ASSIGNOP> Lexeme = found
+Line# 11: TOKEN <CONST_CHAR> Lexeme 	 found
+Line# 11: TOKEN <SEMICOLON> Lexeme ; found
+Line# 13: TOKEN <CHAR> Lexeme char found
+Line# 13: TOKEN <ID> Lexeme str found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	4--> <str,ID>
+	6--> <ch,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 13: TOKEN <LSQUARE> Lexeme [ found
+Line# 13: TOKEN <RSQUARE> Lexeme ] found
+Line# 13: TOKEN <ASSIGNOP> Lexeme = found
+Line# 13: TOKEN <ID> Lexeme hello found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	4--> <str,ID>
+	5--> <hello,ID>
+	6--> <ch,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 13: TOKEN <ID> Lexeme tworld found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	4--> <str,ID>
+	5--> <hello,ID>
+	6--> <ch,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 13: TOKEN <SEMICOLON> Lexeme ; found
+Line# 15: TOKEN <MULOP> Lexeme / found
+Line# 15: TOKEN <MULOP> Lexeme / found
+Line# 15: TOKEN <ID> Lexeme December found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	4--> <str,ID>
+	5--> <hello,ID>
+	6--> <ch,ID>
+	8--> <December,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 15: TOKEN <CONST_INT> Lexeme 3 found
+Line# 15: TOKEN <COMMA> Lexeme , found
+Line# 15: TOKEN <CONST_INT> Lexeme 2022 found
+Line# 16: TOKEN <ID> Lexeme printf found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID>
+	5--> <hello,ID>
+	6--> <ch,ID>
+	8--> <December,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 16: TOKEN <LPAREN> Lexeme ( found
+Line# 16: TOKEN <ID> Lexeme The found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID>
+	5--> <hello,ID>
+	6--> <ch,ID>
+	8--> <December,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 16: TOKEN <ID> Lexeme day found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 17: TOKEN <ID> Lexeme was found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID>
+	9--> <tworld,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 18: TOKEN <ID> Lexeme sunny found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 18: TOKEN <RPAREN> Lexeme ) found
+Line# 18: TOKEN <SEMICOLON> Lexeme ; found
+Line# 20: TOKEN <MULOP> Lexeme / found
+Line# 20: TOKEN <MULOP> Lexeme * found
+Line# 20: TOKEN <MULOP> Lexeme * found
+Line# 20: TOKEN <MULOP> Lexeme * found
+Line# 20: TOKEN <MULOP> Lexeme * found
+Line# 20: TOKEN <ID> Lexeme CSE found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 20: TOKEN <CONST_INT> Lexeme 310 found
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <ID> Lexeme Compiler found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 21: TOKEN <ID> Lexeme Sessional found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID><Sessional,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <MULOP> Lexeme * found
+Line# 21: TOKEN <MULOP> Lexeme / found
+Line# 22: TOKEN <MULOP> Lexeme / found
+Line# 22: TOKEN <MULOP> Lexeme / found
+Line# 22: TOKEN <ID> Lexeme It found
+	ScopeTable# 2
+	1--> <x,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID><It,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID><Sessional,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 22: TOKEN <ID> Lexeme is found
+	ScopeTable# 2
+	1--> <x,ID><is,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID><It,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID><Sessional,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 22: TOKEN <ID> Lexeme a found
+	ScopeTable# 2
+	1--> <x,ID><is,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID><It,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID>
+	8--> <December,ID><was,ID><Sessional,ID><a,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 23: TOKEN <ID> Lexeme fun found
+	ScopeTable# 2
+	1--> <x,ID><is,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID><It,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID><fun,ID>
+	8--> <December,ID><was,ID><Sessional,ID><a,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 23: TOKEN <ID> Lexeme course found
+	ScopeTable# 2
+	1--> <x,ID><is,ID>
+	2--> <y,ID><The,ID>
+	3--> <f,ID>
+	4--> <str,ID><printf,ID><CSE,ID><Compiler,ID><It,ID>
+	5--> <hello,ID><day,ID>
+	6--> <ch,ID><fun,ID><course,ID>
+	8--> <December,ID><was,ID><Sessional,ID><a,ID>
+	9--> <tworld,ID>
+	10--> <sunny,ID>
+	ScopeTable# 1
+	4--> <main,ID>
+Line# 24: TOKEN <RETURN> Lexeme return found
+Line# 24: TOKEN <CONST_INT> Lexeme 0 found
+Line# 24: TOKEN <SEMICOLON> Lexeme ; found
+Line# 25: TOKEN <RCURL> Lexeme } found

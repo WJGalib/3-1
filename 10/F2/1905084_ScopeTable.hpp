@@ -12,10 +12,10 @@ class ScopeTable {
 
     inline static int currId = 0;
 
-    static unsigned int h1 (char* a, int N) {
-        unsigned int h = 0, i, len = strlen(a);
-        for (i=0; i<len; i++) h = (a[i] + (h<<6) + (h<<16) - h) % N;
-        return h;
+    static unsigned long long int h1 (char* a, int N) {
+        unsigned long long int h = 0, i, len = strlen(a);
+        for (i=0; i<len; i++) h = (a[i] + (h<<6) + (h<<16) - h);
+        return h % N;
     };
 
     static void deleteChain (SymbolInfo* s) {
@@ -25,7 +25,7 @@ class ScopeTable {
     };
 
     bool insert (SymbolInfo* x) {
-        unsigned int i = h1(x->getName(), N) % N;
+        unsigned long long int i = h1(x->getName(), N) % N;
         int j = 0;
         if (!T[i]) T[i] = x;
         else {
@@ -33,7 +33,7 @@ class ScopeTable {
             while (r->getNext()) r = r->getNext(), j++;
             r->setNext(x), j++;
         };
-        cout << "\tInserted in ScopeTable# " << this->id << " at position " << i+1 << ", " << j+1 << endl;
+        //cout << "\tInserted in ScopeTable# " << this->id << " at position " << i+1 << ", " << j+1 << endl;
         return true;
     };
 
@@ -45,13 +45,13 @@ public:
         this->parentScope = nullptr;
         this->T = new SymbolInfo* [N];
         for (int i=0; i<N; i++) T[i] = nullptr;
-        cout << "\tScopeTable# " << this->id << " created" << endl;
+        //cout << "\tScopeTable# " << this->id << " created" << endl;
     };
 
     ~ScopeTable() {
         for (int i=0; i<N; i++) if (T[i]) deleteChain(T[i]);
         delete[] T;
-        cout << "\tScopeTable# " << this->id << " removed" << endl;
+        //cout << "\tScopeTable# " << this->id << " removed" << endl;
         //cout << "table destroyed!!" << endl;
     };
 
@@ -74,7 +74,7 @@ public:
     };
 
     SymbolInfo* lookUp (char* key, bool quiet = false) {
-        unsigned int i = h1(key, N) % N;
+        unsigned long long int i = h1(key, N) % N;
         int j = 0;
         if (!T[i]) return nullptr;
         for (SymbolInfo* r = T[i]; r; r = r->getNext(), j++) 
@@ -87,15 +87,15 @@ public:
     };
 
     bool deleteKey (char* key) {
-        unsigned int i = h1(key, N) % N;
+        unsigned long long int i = h1(key, N) % N;
         int j = 0;
         if (!T[i]) return false;
         if (!strcmp(T[i]->getName(), key)) {
             SymbolInfo* d = T[i];
             T[i] = d->getNext();
             delete d;
-            cout << "\tDeleted '" << key << "' from ScopeTable# " 
-                     << this->id << " at position " << i+1 << ", " << j+1 << endl;
+            //cout << "\tDeleted '" << key << "' from ScopeTable# " 
+            //         << this->id << " at position " << i+1 << ", " << j+1 << endl;
             return true;
         };
         for (SymbolInfo* r = T[i]; r->getNext(); r = r->getNext(), j++) {
@@ -105,8 +105,8 @@ public:
                 r->setNext (d->getNext());
                 delete d;
                 //cout << __LINE__ << endl;
-                cout << "\tDeleted '" << key << "' from ScopeTable# " 
-                     << this->id << " at position " << i+1 << ", " << j+1 << endl;
+                //cout << "\tDeleted '" << key << "' from ScopeTable# " 
+                //     << this->id << " at position " << i+1 << ", " << j+1 << endl;
                 return true;
             };
         };
@@ -123,7 +123,7 @@ public:
                 fprintf (logout, "\t%d--> ", i+1);
                 for (SymbolInfo* r = T[i]; r; r = r->getNext())
                     //cout << "<" << r->getName() << "," << r->getType() << "> ";
-                    fprintf (logout, "<%s,%s>", r->getName(), r->getType());
+                    fprintf (logout, "<%s,%s> ", r->getName(), r->getType());
                 //cout << endl;
                 fprintf (logout, "\n");
             };

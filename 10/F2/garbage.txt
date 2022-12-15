@@ -1,0 +1,14 @@
+SLSTR ({CHARACTER}|['])*
+MLSTR ({CHARACTER}|[']|(\\{WHITESPACE}?{NEWLINE}))*
+SLSTRLIT (\"){SLSTR}(\")
+MLSTRLIT (\"){MLSTR}(\")
+UNFINSTRLIT (\")({MLSTR}|{SLSTR})
+
+SLCMTSTR ([^\r\n])*
+MLCMTSTR ([^\r\n]|(\\{WHITESPACE}?{NEWLINE}))*
+SLCMT \/\/({SLCMTSTR}|{MLCMTSTR})
+MLCMT \/\*(({SLCMTSTR}|{NEWLINE})*)\*\/
+UNFINCMT \/\*(({SLCMTSTR}|{NEWLINE})*)
+
+{MLCMT}		{ log_token("MULTI LINE COMMENT"), newline_check(); }
+{UNFINCMT} 	{ newline_check(), log_err("UNFINISHED_COMMENT"); }

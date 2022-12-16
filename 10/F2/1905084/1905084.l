@@ -71,7 +71,10 @@ void string_action (bool multi) {
 	else log_token("SINGLE LINE STRING");
 	char* str = new char[strlen(yytext)+2];
 	int srcI = 1, dstI = 0;
+	//for (int i=0; i<strlen(yytext); i++) cout << yytext[i] << " " << (int)(yytext[i]) << endl;
+	//cout << endl;
 	while (yytext[srcI] != '\"') {
+		//if (yytext[srcI] == 13) srcI++;
 		if (yytext[srcI] == '\\') {
 			srcI++;
 			if (yytext[srcI] == ' ' || yytext[srcI] == '\t') {
@@ -82,13 +85,16 @@ void string_action (bool multi) {
 				srcI += 2;
 			} else {
 				str[dstI] = unescape_seq(yytext[srcI]);
+				//cout << str[dstI] << " " << (int)(str[dstI]) << " >>>> " << dstI << endl;
 				srcI++, dstI++;
 			};
 		} else {
 			str[dstI] = yytext[srcI];
+			//cout << str[dstI] << " " << (int)(str[dstI]) << " >>>> " << dstI << endl;
 			srcI++, dstI++;
 		};
 	};
+	//cout << __LINE__ <<  " " << dstI << endl;
 	str[dstI] = '\0';
 	if (multi) fprintf(tokenout,"<%s, %s>\n", "MULTI LINE STRING", str);
 	else fprintf(tokenout,"<%s, %s>\n", "SINGLE LINE STRING", str);
@@ -105,37 +111,32 @@ ALNUM {LETTER}|{DIGIT}
 NEWLINE (\r)?\n
 
 DIGITS {DIGIT}+
+
 FRAC ({DIGIT}*(\.){DIGITS})|({DIGITS}(\.))
 EXTRAFRAC {DIGIT}*(\.){DIGITS}(\.)({DIGITS}|(\.))*
+
 EXP [eE][-+]?{DIGITS}
 FRACEXP [eE][-+]?({FRAC}|{EXTRAFRAC})
 FLOATING ({FRAC}{EXP}?)|({DIGITS}{EXP})
 ILLFORMED ({EXTRAFRAC}{EXP}?)|({FRAC}{FRACEXP}?)|({EXTRAFRAC}{FRACEXP}?)|({DIGITS}{FRACEXP})
 
-NORMCHAR [^'"\\\n\r]
-ESCCHAR (\\[nt\\'"afrbv0])
-CCHAR {NORMCHAR}|{ESCCHAR}
-CCHARPLUSDQT {CCHAR}|[\"]
-CHARLIT ('){CCHARPLUSDQT}(')
-MULTICHARLIT ('){CCHARPLUSDQT}{CCHARPLUSDQT}+(')
-UNFINCHARLIT ('){CCHARPLUSDQT}*
-EMPTYCHARLIT (')(')
+CHARACTER [^'"\\\n\r]|(\\[nt\\'"afrbv0])
+CHARLIT (')({CHARACTER}|[\"])(')
+MULTICHARLIT (')({CHARACTER}|[\"])({CHARACTER}|[\"])+(')
+UNFINCHARLIT (')({CHARACTER}|[\"])*
+EMPTYCHARLIT (\'\')
 
-CCHARPLUSSQT {CCHAR}|[']
-SLSTR {CCHARPLUSSQT}*
-MLSTR ({CCHARPLUSSQT}|(\\{WHITESPACE}?{NEWLINE}))*
+SLSTR ({CHARACTER}|['])*
+MLSTR ({CHARACTER}|[']|(\\{WHITESPACE}?{NEWLINE}))*
 SLSTRLIT (\"){SLSTR}(\")
 MLSTRLIT (\"){MLSTR}(\")
 UNFINSTRLIT (\")({MLSTR}|{SLSTR})
 
-SLCMTSTR ([^\r\n]|(\\{WHITESPACE}?{NEWLINE})?)*
-MLCMTSTR ([^*]|((\*)+[^*/]))*(\*)*
-SLCMT (\/\/){SLCMTSTR}
-MLCMT (\/\*){MLCMTSTR}(\*\/)
-UNFINCMT (\/\*){MLCMTSTR}
-
-IDENTIFIER ({LETTER}|_)({ALNUM}|_)*
-NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
+SLCMTSTR ([^\r\n])*
+MLCMTSTR ([^\r\n]|(\\{WHITESPACE}?{NEWLINE}))*
+SLCMT \/\/({SLCMTSTR}|{MLCMTSTR})
+MLCMT (\/\*)([^*]|((\*)+[^/*]))*(\*)+(\/)
+UNFINCMT (\/\*)([^*]|((\*)+[^/*]))*(\*)*
 
 %%
 
@@ -145,7 +146,7 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 {NEWLINE} 	 { line_count++; }
 
 {SLCMT} 	{ log_token("SINGLE LINE COMMENT"), newline_check(); }
-{MLCMT}		{ log_token("MULTI LINE COMMENT"),  newline_check(); }
+{MLCMT}		{ log_token("MULTI LINE COMMENT"), newline_check(); }
 {UNFINCMT} 	{ newline_check(), log_err("UNFINISHED_COMMENT"); }
 
 "if"		|	
@@ -165,25 +166,25 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 "default"	|
 "continue"	{ print_and_log_keyword(); }		
 
-"+"|"-"		{ print_and_log_token("ADDOP");   }
-"*"|"/"|"%"	{ print_and_log_token("MULOP");   }
-"++"|"--"	{ print_and_log_token("INCOP");   }
+"+"|"-"		{ print_and_log_token("ADDOP"); }
+"*"|"/"|"%"	{ print_and_log_token("MULOP"); }
+"++"|"--"	{ print_and_log_token("INCOP"); }
 "&&"|"||"	{ print_and_log_token("LOGICOP"); }
 "&"|"|"|"^"|"<<"|">>" 		{ print_and_log_token("BITOP"); }
 "<"|"<="|">"|">="|"=="|"!="	{ print_and_log_token("RELOP"); }
 "="  { print_and_log_token("ASSIGNOP"); }
-"!"  { print_and_log_token("NOT");		}
-"("  { print_and_log_token("LPAREN"); 	}
-")"  { print_and_log_token("RPAREN"); 	}
-"{"  { print_and_log_token("LCURL"), st->enterScope(); }
-"}"  { print_and_log_token("RCURL"), st->exitScope();  }
-"["  { print_and_log_token("LSQUARE");   }
-"]"  { print_and_log_token("RSQUARE");   }
-","  { print_and_log_token("COMMA");  	 }
+"!"  { print_and_log_token("NOT"); }
+"("  { print_and_log_token("LPAREN"); }
+")"  { print_and_log_token("RPAREN"); }
+"{"  { print_and_log_token("LCURL"); st->enterScope(); }
+"}"  { print_and_log_token("RCURL"); st->exitScope(); }
+"["  { print_and_log_token("LSQUARE"); }
+"]"  { print_and_log_token("RSQUARE"); }
+","  { print_and_log_token("COMMA"); }
 ";"  { print_and_log_token("SEMICOLON"); }
 
 
-{DIGITS} 	{ print_and_log_token("CONST_INT");   }
+{DIGITS} 	{ print_and_log_token("CONST_INT"); }
 {EXTRAFRAC} { log_err("TOO_MANY_DECIMAL_POINTS"); }
 {FLOATING} 	{ print_and_log_token("CONST_FLOAT"); }
 {ILLFORMED} { log_err("ILLFORMED_NUMBER"); }
@@ -199,15 +200,15 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 	};
 }
 
-{MULTICHARLIT} { log_err("MULTICHAR_CONST_CHAR");  }
+{MULTICHARLIT} { log_err("MULTICHAR_CONST_CHAR"); }
 {UNFINCHARLIT} { log_err("UNFINISHED_CONST_CHAR"); }
 {EMPTYCHARLIT} { log_err("EMPTY_CONST_CHAR"); }
 
 {SLSTRLIT} 		{ string_action(false), newline_check(); }
-{MLSTRLIT} 		{ string_action(true),  newline_check(); }
+{MLSTRLIT} 		{ string_action(true), newline_check(); }
 {UNFINSTRLIT} 	{ newline_check(), log_err("UNFINISHED_STRING"); }
 
-{IDENTIFIER} {
+({LETTER}|_)({ALNUM}|_)* {
 	print_and_log_token("ID");
 	char* id = new char[5]; strcpy(id, "ID");
 	char* lexeme = new char[strlen(yytext)+2]; strcpy(lexeme, yytext);
@@ -215,7 +216,7 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 	else fprintf(logout,"\t%s already exisits in the current ScopeTable\n", lexeme);
 }
 
-{NUMIDENTIFIER} { log_err("INVALID_ID_SUFFIX_NUM_PREFIX"); }
+({DIGIT}|_)({ALNUM}|_)* { log_err("INVALID_ID_SUFFIX_NUM_PREFIX"); }
 
 . { log_err("UNRECOGNIZED_CHAR"); }
 
@@ -230,7 +231,7 @@ int main (int argc, char** argv) {
 	};
 	
 	FILE *fin = fopen (argv[1], "r");
-	if (fin == NULL) {
+	if (fin == NULL){
 		printf("Cannot open specified file\n");
 		return 0;
 	};
@@ -243,6 +244,8 @@ int main (int argc, char** argv) {
 	st->printAllScope(logout);
 	fprintf(logout, "Total lines: %d\n", line_count);
 	fprintf(logout, "Total errors: %d\n", err_count);
-	fclose(yyin), fclose(tokenout), fclose(logout);
+	fclose(yyin);
+	fclose(tokenout);
+	fclose(logout);
 	return 0;
 };

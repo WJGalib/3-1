@@ -12,3 +12,40 @@ UNFINCMT \/\*(({SLCMTSTR}|{NEWLINE})*)
 
 {MLCMT}		{ log_token("MULTI LINE COMMENT"), newline_check(); }
 {UNFINCMT} 	{ newline_check(), log_err("UNFINISHED_COMMENT"); }
+
+
+
+void string_action (bool multi) {
+	if (multi) log_token("MULTI LINE STRING");
+	else log_token("SINGLE LINE STRING");
+	char* str = new char[strlen(yytext)+2];
+	int srcI = 1, dstI = 0;
+	//for (int i=0; i<strlen(yytext); i++) cout << yytext[i] << " " << (int)(yytext[i]) << endl;
+	//cout << endl;
+	while (yytext[srcI] != '\"') {
+		//if (yytext[srcI] == 13) srcI++;
+		if (yytext[srcI] == '\\') {
+			srcI++;
+			if (yytext[srcI] == ' ' || yytext[srcI] == '\t') {
+				while (yytext[srcI] != '\n' && yytext[srcI] != '\r') srcI++;
+			} else if (yytext[srcI] == '\n') {
+				srcI++;
+			} else if (yytext[srcI] == '\r') {
+				srcI += 2;
+			} else {
+				str[dstI] = unescape_seq(yytext[srcI]);
+				//cout << str[dstI] << " " << (int)(str[dstI]) << " >>>> " << dstI << endl;
+				srcI++, dstI++;
+			};
+		} else {
+			str[dstI] = yytext[srcI];
+			//cout << str[dstI] << " " << (int)(str[dstI]) << " >>>> " << dstI << endl;
+			srcI++, dstI++;
+		};
+	};
+	//cout << __LINE__ <<  " " << dstI << endl;
+	str[dstI] = '\0';
+	if (multi) fprintf(tokenout,"<%s, %s>\n", "MULTI LINE STRING", str);
+	else fprintf(tokenout,"<%s, %s>\n", "SINGLE LINE STRING", str);
+	delete str;
+};

@@ -8,19 +8,21 @@ void main() {
 	f = f - 3.14;
 	f = f * 2.81E0;
 	
-	char ch = '""';
+	char ch = '"';
 	ch = '\t';
 	
 	char str[] = "hello\tworld";
 	
 	// December 3, 2022
-	printf("The day\ 	
-	was\ 		
+	printf("The day\
+	was\
 	sunny");
 	
 	/** ** CSE 3"""10'
 	*** Compiler Ses''/*sional ***/
 	// It is a'\
 	"fun" course"
+	char p = 'dgfhfhg;
+
 	return 0;
 }

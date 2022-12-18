@@ -1,0 +1,50 @@
+"NO\n"
+696
+87.6
+0.0
+0.
+.56
+90.56.45
+34.5 6.7
+234 456.2.000
+3E8 4e8
+34.5E9
+34e8.5
+3.e3
+3.6.7e4
+3e
+3e.6
+.7e4
+7.7.8e4
+7.7.3e
+e9
+e94.5
+0e4.5
+0e4.5.6e4
+under_score
+__gcd
+'a'
+'' 'rr'
+'
+'a
+'
+' ' 'a '
+'\t' '\n' '\\n'
+'\0'
+''a''
+"string"
+"st ri ng"
+"st\nri\tng"
+"st\
+ring"
+"str
+ing"
+"string
+"stri\\ng"
+/*comment 2*/ /*com
+ment*/ //hello
+//another comment
+that is supposed to be bad
+//and also\
+goes to a new line
+/*no closure

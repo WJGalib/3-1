@@ -1,0 +1,178 @@
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long int ll;
+typedef double double;
+#define test ll t; cin>> t; for(ll tc=1; tc<=t; tc++)
+#define caase cout<< "Case " << tc<< ": ";
+#define arrays ll n; cin>> n; ll a[n]; for(ll i=0; i<n; i++) cin>> a[i];
+#define shown for(ll i=0; i<n; i++) cout<< a[i]<< " "; cout<< endl;
+ 
+#define pll pair<ll,ll>
+#define pld pair<ll,double>
+#define pdl pair<double,ll>
+#define mp make_pair
+#define x first
+#define y second
+#define double_MAX 1000000000.00
+#define N 200009
+#define pi acos(-1.0)
+ 
+ 
+ 
+class point{
+public:
+    double x;
+    double y;
+    point(double x, double y){
+        this->x=x; this->y=y;
+    }
+    point(){
+        this->x=0; this->y=0;
+    }
+    double dist(point a){
+        return (this->x-a.x)*(this->x-a.x)+(this->y-a.y)*(this->y-a.y);
+    }
+    double dist(){
+        return (this->x)*(this->x)+(this->y)*(this->y);
+    }
+    double angle(){
+        double d=sqrt(this->dist());
+        double t=asin(this->y/d);
+        t=abs(t);
+        if(x>=0 && y>=0) return t;
+        if(x<0 && y>=0) return pi-t;
+        if(x>=0 && y<0) return pi+pi-t;
+        return pi+t;
+    }
+    double angle(point p){
+        point h(p.x-this->x, p.y-this->y);
+        return h.angle();
+    }
+    friend ostream& operator<<(ostream& os, const point& dt);
+ 
+    point operator +(const point& b) const { return point{x+b.x, y+b.y}; }
+    point operator -(const point& b) const { return point{x-b.x, y-b.y}; }
+    int operator *(const point& b) const { return (int) x * b.y - (int) y * b.x; }
+    void operator +=(const point& b) { x += b.x; y += b.y; }
+    void operator -=(const point& b) { x -= b.x; y -= b.y; }
+    void operator *=(const int k) { x *= k; y *= k; }
+ 
+    int cross(const point& b, const point& c) const {
+        return (b - *this) * (c - *this);
+    }
+};
+ 
+ 
+class line{
+public:
+	double a;
+	double b;
+	double c;
+	line(double a, double b, double c){
+		this->a=a;
+		this->b=b;
+		this->c=c;
+	}
+	line(){
+		this->a=0;
+		this->b=0;
+		this->c=0;
+	}
+	line(point P, point Q){
+		a = Q.y - P.y;
+		b = P.x - Q.x;
+		c = -(a * (P.x) + b * (P.y));
+	}
+	line(double x1, double y1, double r1, double x2, double y2, double r2){
+        	a=2*x1-2*x2;
+        	b=2*y1-2*y2;
+        	c=x2*x2-x1*x1+y2*y2-y1*y1+r1*r1-r2*r2;
+    	}
+	double side(point g){
+       	 	return (g.x*a+g.y*b+c);
+    	}
+	double dis(point g){
+        	return abs((a*g.x+b*g.y+c)/sqrt(a*a+b*b));
+    	}
+	bool equal(line L){
+        	double f;
+        	if(L.a!=0) f=this->a/L.a;
+        	else if(L.b!=0) f=this->b/L.b;
+        	else if(L.c!=0) f=this->c/L.c;
+        	return ((this->a/L.a==f || (this->a==L.a && this->a==0))&&
+               		(this->b/L.b==f || (this->b==L.b && this->b==0))&&
+               		(this->c/L.c==f || (this->c==L.c && this->c==0)))? true : false;
+    	}
+ 
+    	bool parallel(line L){
+        	double f;
+        	if(L.a!=0) f=this->a/L.a;
+        	else if(L.b!=0) f=this->b/L.b;
+        	return ((this->a/L.a==f || (this->a==L.a && this->a==0))&&
+               	(this->b/L.b==f || (this->b==L.b && this->b==0)))? true : false;
+    	}
+	point intersect(line L){
+		double a1=this->a;
+		double b1=this->b;
+		double c1=this->c;
+		double a2=L.a;
+		double b2=L.b;
+		double c2=L.c;
+		double det=-a1*b2+a2*b1;
+ 
+		if (det == 0){
+			return point(double_MAX, double_MAX);
+		}
+		else{
+			double x = (b2*c1 - b1*c2)/det;
+			double y = (a1*c2 - a2*c1)/det;
+			return point(x, y);
+		}
+	}
+	double getx(double Y){
+        return -(b*Y+c)/a;
+	}
+	double gety(double X){
+        return -(a*X+c)/b;
+	}
+    friend ostream& operator<<(ostream& os, const line& dt);
+    bool operator==(const line& dt){
+        point o(0,0);
+        line L1(this->a,this->b,this->c);
+        line L2(dt.a,dt.b,dt.c);
+        return (L1.a*L2.b==L1.b*L2.a && L1.dis(o)==L2.dis(o))? true : false;
+    }
+};
+ 
+bool between(double a, double b, double c){
+    double d=(a-b)*(b-c);
+    return (d<0)? false : true;
+}
+ 
+int main(){
+    int n, m; cin>> n>> m;
+    point a[n];
+    for(int i=0; i<n; i++){
+        cin>> a[i].x>> a[i].y;
+    }
+    point f;
+    for(int j=0; j<m; j++){
+        cin>> f.x>> f.y;
+        int b=0, cnt=0;
+        for(int i=0; i<n; i++){
+            int g=i, h=(i+1)%n;
+            if(a[g].x>a[h].x){
+                swap(g,h);
+            }
+            line L1(a[g],a[h]), L2(a[g],f), L3(a[h],f);
+            //cout<< L1.equal(L2)<< " "<< L1.a<< " "<< L1.b<< " "<< L1.c<<\
+			 " "<< L2.a<< " "<< L2.b<< " "<< L2.c<<\
+			  " "<< i<< " "<< j<< endl;
+            if((L1.equal(L2) || L1.equal(L3)) && between(a[g].x,f.x,a[h].x) && between(a[g].y,f.y,a[h].y)) b++;
+            if(between(a[g].x,f.x,a[h].x) && L1.side(f)>0 && a[h].x!=f.x) cnt++;
+        }
+        if(b!=0) cout<< "BOUNDARY\n";
+        else if(cnt%2==0) cout<< "OUTSIDE\n";
+        else cout<< "INSIDE\n";
+    }
+}

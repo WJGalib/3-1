@@ -1,0 +1,191 @@
+Line# 1: Token <SINGLE LINE STRING> Lexeme "NO\n" found
+Line# 2: Token <CONST_INT> Lexeme 696 found
+Line# 3: Token <CONST_FLOAT> Lexeme 87.6 found
+Line# 4: Token <CONST_FLOAT> Lexeme 0.0 found
+Line# 5: Token <CONST_INT> Lexeme 0 found
+Error at line# 5: UNRECOGNIZED_CHAR .
+Error at line# 6: UNRECOGNIZED_CHAR .
+Line# 6: Token <CONST_INT> Lexeme 56 found
+Error at line# 7: TOO_MANY_DECIMAL_POINTS 90.56.45
+Line# 8: Token <CONST_FLOAT> Lexeme 34.5 found
+Line# 8: Token <CONST_FLOAT> Lexeme 6.7 found
+Line# 9: Token <CONST_INT> Lexeme 234 found
+Error at line# 9: TOO_MANY_DECIMAL_POINTS 456.2.000
+Line# 10: Token <CONST_FLOAT> Lexeme 3E8 found
+Line# 10: Token <CONST_FLOAT> Lexeme 4e8 found
+Line# 11: Token <CONST_FLOAT> Lexeme 34.5E9 found
+Error at line# 12: ILLFORMED_NUMBER 34e8.5
+Line# 13: Token <CONST_INT> Lexeme 3 found
+Error at line# 13: UNRECOGNIZED_CHAR .
+Line# 13: Token <ID> Lexeme e3 found
+	ScopeTable# 1
+	1--> <e3,ID> 
+Error at line# 14: TOO_MANY_DECIMAL_POINTS 3.6.7
+Line# 14: Token <ID> Lexeme e4 found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> 
+Error at line# 15: INVALID_ID_SUFFIX_NUM_PREFIX 3e
+Error at line# 16: INVALID_ID_SUFFIX_NUM_PREFIX 3e
+Error at line# 16: UNRECOGNIZED_CHAR .
+Line# 16: Token <CONST_INT> Lexeme 6 found
+Error at line# 17: UNRECOGNIZED_CHAR .
+Line# 17: Token <CONST_FLOAT> Lexeme 7e4 found
+Error at line# 18: TOO_MANY_DECIMAL_POINTS 7.7.8
+Line# 18: Token <ID> Lexeme e4 found
+	e4 already exisits in the current ScopeTable
+Error at line# 19: TOO_MANY_DECIMAL_POINTS 7.7.3
+Line# 19: Token <ID> Lexeme e found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+Line# 20: Token <ID> Lexeme e9 found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	7--> <e9,ID> 
+Line# 21: Token <ID> Lexeme e94 found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	7--> <e9,ID> <e94,ID> 
+Error at line# 21: UNRECOGNIZED_CHAR .
+Line# 21: Token <CONST_INT> Lexeme 5 found
+Error at line# 22: ILLFORMED_NUMBER 0e4.5
+Error at line# 23: TOO_MANY_DECIMAL_POINTS 0e4.5.6
+Line# 23: Token <ID> Lexeme e4 found
+	e4 already exisits in the current ScopeTable
+Line# 24: Token <ID> Lexeme under_score found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	7--> <e9,ID> <e94,ID> 
+	10--> <under_score,ID> 
+Line# 25: Token <ID> Lexeme __gcd found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	7--> <e9,ID> <e94,ID> 
+	10--> <under_score,ID> 
+Line# 26: Token <CONST_CHAR> Lexeme a found
+Error at line# 27: EMPTY_CONST_CHAR ''
+Error at line# 27: MULTICHAR_CONST_CHAR 'rr'
+Error at line# 28: UNFINISHED_CONST_CHAR '
+Error at line# 29: UNFINISHED_CONST_CHAR 'a
+Error at line# 30: UNFINISHED_CONST_CHAR '
+Line# 31: Token <CONST_CHAR> Lexeme   found
+Error at line# 31: MULTICHAR_CONST_CHAR 'a '
+Line# 32: Token <CONST_CHAR> Lexeme 	 found
+Line# 32: Token <CONST_CHAR> Lexeme \n found
+Error at line# 32: MULTICHAR_CONST_CHAR '\\n'
+Line# 33: Token <CONST_CHAR> Lexeme \0 found
+Error at line# 34: EMPTY_CONST_CHAR ''
+Line# 34: Token <ID> Lexeme a found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> 
+	10--> <under_score,ID> 
+Error at line# 34: EMPTY_CONST_CHAR ''
+Line# 35: Token <SINGLE LINE STRING> Lexeme "string" found
+Line# 36: Token <SINGLE LINE STRING> Lexeme "st ri ng" found
+Line# 37: Token <SINGLE LINE STRING> Lexeme "st\nri\tng" found
+Line# 38: Token <MULTI LINE STRING> Lexeme "st\
+ring" found
+Error at line# 40: UNFINISHED_STRING "str
+Line# 41: Token <ID> Lexeme ing found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Error at line# 41: UNFINISHED_STRING "
+Error at line# 42: UNFINISHED_STRING "string
+Line# 43: Token <SINGLE LINE STRING> Lexeme "stri\\ng" found
+Line# 44: Token <MULTI LINE COMMENT> Lexeme /*comment 2*/ found
+Line# 44: Token <MULTI LINE COMMENT> Lexeme /*com
+ment*/ found
+Line# 45: Token <SINGLE LINE COMMENT> Lexeme //hello found
+Line# 46: Token <SINGLE LINE COMMENT> Lexeme //another comment found
+Line# 47: Token <ID> Lexeme that found
+	ScopeTable# 1
+	1--> <e3,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 47: Token <ID> Lexeme is found
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 47: Token <ID> Lexeme supposed found
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	6--> <supposed,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 47: Token <ID> Lexeme to found
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> 
+	5--> <__gcd,ID> 
+	6--> <supposed,ID> <to,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 47: Token <ID> Lexeme be found
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> 
+	4--> <be,ID> 
+	5--> <__gcd,ID> 
+	6--> <supposed,ID> <to,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 47: Token <ID> Lexeme bad found
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> <bad,ID> 
+	4--> <be,ID> 
+	5--> <__gcd,ID> 
+	6--> <supposed,ID> <to,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Line# 48: Token <SINGLE LINE COMMENT> Lexeme //and also\
+goes to a new line found
+Error at line# 51: UNFINISHED_COMMENT /*no closure
+
+	ScopeTable# 1
+	1--> <e3,ID> <is,ID> 
+	2--> <e4,ID> <e,ID> <bad,ID> 
+	4--> <be,ID> 
+	5--> <__gcd,ID> 
+	6--> <supposed,ID> <to,ID> 
+	7--> <e9,ID> <e94,ID> 
+	8--> <a,ID> <that,ID> 
+	9--> <ing,ID> 
+	10--> <under_score,ID> 
+Total lines: 51
+Total errors: 29

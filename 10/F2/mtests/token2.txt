@@ -1,0 +1,46 @@
+<SINGLE LINE STRING, NO
+>
+<CONST_INT, 696>
+<CONST_FLOAT, 87.6>
+<CONST_FLOAT, 0.0>
+<CONST_INT, 0>
+<CONST_INT, 56>
+<CONST_FLOAT, 34.5>
+<CONST_FLOAT, 6.7>
+<CONST_INT, 234>
+<CONST_FLOAT, 3E8>
+<CONST_FLOAT, 4e8>
+<CONST_FLOAT, 34.5E9>
+<CONST_INT, 3>
+<ID, e3>
+<ID, e4>
+<CONST_INT, 6>
+<CONST_FLOAT, 7e4>
+<ID, e4>
+<ID, e>
+<ID, e9>
+<ID, e94>
+<CONST_INT, 5>
+<ID, e4>
+<ID, under_score>
+<ID, __gcd>
+<CONST_CHAR, a>
+<CONST_CHAR,  >
+<CONST_CHAR, 	>
+<CONST_CHAR, \n>
+<CONST_CHAR, \0>
+<ID, a>
+<SINGLE LINE STRING, string>
+<SINGLE LINE STRING, st ri ng>
+<SINGLE LINE STRING, st
+ri	ng>
+<MULTI LINE STRING, st
+ring>
+<ID, ing>
+<SINGLE LINE STRING, stri\ng>
+<ID, that>
+<ID, is>
+<ID, supposed>
+<ID, to>
+<ID, be>
+<ID, bad>

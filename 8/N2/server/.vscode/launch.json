@@ -8,8 +8,22 @@
             "type": "java",
             "name": "Launch Main",
             "request": "launch",
-            "mainClass": "exam.Main",
-            "projectName": "exam_f49585c7"
+            "mainClass": "server.Main",
+            "projectName": "server_de4eaaf3"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "server.Main",
+            "projectName": "server_3c2b32eb"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "server.Main",
+            "projectName": "server_48d3aceb"
         },
         {
             "type": "java",

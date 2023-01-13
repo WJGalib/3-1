@@ -1,0 +1,293 @@
+%{
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cassert>
+#include <cstdarg>
+#include "1905084_SymbolTable.hpp"
+
+using namespace std;
+
+int yyparse(void);
+int yylex(void);
+extern FILE *yyin;
+FILE *fp, *parseout, *logout;
+
+extern SymbolTable* table;
+ArrayList<SymbolInfo*> *var_list;
+
+char  *NON_TERMINAL, *start, *program, *unit, *func_declaration, *func_definition, *parameter_list, *compound_statement, 
+	  *var_declaration, *type_specifier, *declaration_list, *statements, *statement, *expression_statement, *variable, *expression, 
+	  *logic_expression, *rel_expression, *simple_expression, *term, *unary_expression, *factor, *argument_list, *arguments;
+
+void yyerror(char *s) {
+	//write your code
+};
+
+void add_children (SymbolInfo* parent, char* name, int n, ... ) {
+	parent = new SymbolInfo (name, NON_TERMINAL);
+	va_list list;
+	va_start (list, n);
+	for (int i=0; i<n; i++) parent->addChild (va_arg(list, SymbolInfo*));
+	va_end(list);
+};
+
+void log_rule (SymbolInfo* lhs) {
+	fprintf(logout, "%s : ", lhs->getName());
+	ArrayList<SymbolInfo*> *children = lhs->getChildren();
+	for (children->moveToStart(); children->currPos() < children->length(); children->next()) {
+		//insert into symbol table
+		SymbolInfo* x = children->getValue();
+		if (x->getType() == NON_TERMINAL) fprintf(logout, "%s ", x->getName());
+		else fprintf(logout, "%s ", x->getType());
+	};
+	fprintf(logout, "\n");
+};
+
+void add_children_and_log (SymbolInfo** parent, char* name, int n, ... ) {
+	*parent = new SymbolInfo (name, NON_TERMINAL);
+	cout << (*parent)->getName() << endl;
+	va_list list;
+	va_start (list, n);
+	for (int i=0; i<n; i++) {
+		SymbolInfo* x = *(va_arg(list, SymbolInfo**));
+		(*parent)->addChild(x);
+		cout << "\t" << x->getType() << endl;
+	};
+	va_end(list);
+	log_rule (*parent);
+};
+
+
+// void f (SymbolInfo** x, SymbolInfo** x1) {
+// 	(*x) = new SymbolInfo(declaration_list, NON_TERMINAL);
+// 	cout << (*x)->getName();
+// 	(*x)->addChild(*x1);
+// 	log_rule(*x);
+// }
+
+%}
+
+%union {
+	SymbolInfo* symbol;
+}
+
+%token <symbol> IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR VOID RETURN ADDOP MULOP INCOP DECOP LOGICOP RELOP ASSIGNOP BITOP NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD COMMA SEMICOLON CONST_INT CONST_FLOAT CONST_CHAR SINGLE_LINE_STRING MULTI_LINE_STRING ID PRINTLN
+
+%type <symbol> start program unit func_declaration func_definition parameter_list compound_statement var_declaration type_specifier declaration_list statements statement expression_statement variable expression logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments
+/* 
+%left 
+%right
+
+%nonassoc  */
+
+
+%%
+
+start : program
+	{
+		//write your code in this block in all the similar blocks below
+	}
+	;
+
+program : program unit 
+	| unit
+	;
+	
+unit : var_declaration
+     | func_declaration
+     | func_definition
+     ;
+     
+func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
+		| type_specifier ID LPAREN RPAREN SEMICOLON
+		;
+		 
+func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+		| type_specifier ID LPAREN RPAREN compound_statement
+ 		;				
+
+
+parameter_list  : parameter_list COMMA type_specifier ID
+		| parameter_list COMMA type_specifier
+ 		| type_specifier ID
+		| type_specifier
+ 		;
+
+ 		
+compound_statement : LCURL statements RCURL
+ 		    | LCURL RCURL
+ 		    ;
+ 		    
+var_declaration : type_specifier declaration_list SEMICOLON {
+			add_children_and_log (&$$, var_declaration, 3, &$1, &$2, &$3);
+
+			// $$ = new SymbolInfo(var_declaration, NON_TERMINAL);
+			// cout << $$->getName();
+			// $$->addChild($1);
+			// $$->addChild($2);
+			// $$->addChild($3);
+			// log_rule($$);
+
+			for (var_list->moveToStart(); var_list->currPos() < var_list->length(); var_list->next()) {
+				//insert into symbol table
+			};
+		 }
+ 		 ;
+ 		 
+type_specifier	: INT { 
+			add_children_and_log (&$$, type_specifier, 1, &$1); 
+			// $$ = new SymbolInfo(type_specifier, NON_TERMINAL);
+			// cout << $$->getName();
+			// $$->addChild($1);
+			// log_rule($$);
+		}
+ 		| FLOAT	{ add_children_and_log (&$$, type_specifier, 1, &$1); }
+ 		| VOID	{ add_children_and_log (&$$, type_specifier, 1, &$1); }
+ 		;
+ 		
+declaration_list : declaration_list COMMA ID {
+			add_children_and_log (&$$, declaration_list, 3, &$1, &$2, &$3);
+
+			var_list->append($3);
+		  }
+ 		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
+			add_children_and_log (&$$, declaration_list, 6, &$1, &$2, &$3, &$4, &$5, &$6);
+			$3->setArray();
+			var_list->append($3);
+		  }
+ 		  | ID {
+			add_children_and_log (&$$, declaration_list, 1, &$1);
+			// cout << $$->getName() << "!!" << endl;
+			// cout << $1->getName() << "!!" << endl;
+
+			// f (&$$, &$1);
+
+			var_list = new ArrayList<SymbolInfo*>();
+			var_list->append($1);
+		  }
+ 		  | ID LTHIRD CONST_INT RTHIRD {
+			add_children_and_log (&$$, declaration_list, 4, &$1, &$2, &$3, &$4);
+			var_list = new ArrayList<SymbolInfo*>();
+			var_list->append($1);
+		  }
+ 		  ;
+ 		  
+statements : statement
+	   | statements statement
+	   ;
+	   
+statement : var_declaration 
+	  | expression_statement 
+	  | compound_statement
+	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
+	  | IF LPAREN expression RPAREN statement
+	  | IF LPAREN expression RPAREN statement ELSE statement
+	  | WHILE LPAREN expression RPAREN statement
+	  | PRINTLN LPAREN ID RPAREN SEMICOLON
+	  | RETURN expression SEMICOLON
+	  ;
+	  
+expression_statement 	: SEMICOLON			
+			| expression SEMICOLON 
+			;
+	  
+variable : ID 		
+	 | ID LTHIRD expression RTHIRD 
+	 ;
+	 
+expression : logic_expression	
+	   | variable ASSIGNOP logic_expression 	
+	   ;
+			
+logic_expression : rel_expression 	
+		 | rel_expression LOGICOP rel_expression 	
+		 ;
+			
+rel_expression	: simple_expression 
+		| simple_expression RELOP simple_expression	
+		;
+				
+simple_expression : term 
+		  | simple_expression ADDOP term 
+		  ;
+					
+term :	unary_expression
+     |  term MULOP unary_expression
+     ;
+
+unary_expression : ADDOP unary_expression  
+		 | NOT unary_expression 
+		 | factor 
+		 ;
+	
+factor	: variable
+	| ID LPAREN argument_list RPAREN
+	| LPAREN expression RPAREN
+	| CONST_INT 
+	| CONST_FLOAT
+	| variable INCOP 
+	| variable DECOP
+	;
+	
+argument_list : arguments
+			  ;
+	
+arguments : arguments COMMA logic_expression
+	      | logic_expression
+	      ;
+ 
+
+%%
+int main (int argc, char *argv[]) {
+	fp = fopen(argv[1],"r");
+	if (!fp) {
+		printf("Cannot Open Input File.\n");
+		exit(1);
+	};
+
+	parseout = fopen(argv[2],"w");
+	/* fclose(fp2); */
+	logout = fopen(argv[3],"w");
+	/* fclose(fp3); */
+	
+	/* fp2= fopen(argv[2],"a");
+	fp3= fopen(argv[3],"a"); */
+	
+	NON_TERMINAL = new char[20], strcpy (NON_TERMINAL, "NON_TERMINAL"); 
+	start = new char[20], strcpy (start, "start"); 
+	program = new char[20], strcpy (program, "program"); 
+	unit = new char[20], strcpy (unit, "unit"); 
+	func_declaration = new char[20], strcpy (func_declaration, "func_declaration"); 
+	func_definition = new char[20], strcpy (func_definition, "func_definition"); 
+	parameter_list = new char[20], strcpy (parameter_list, "parameter_list"); 
+	compound_statement = new char[25], strcpy (compound_statement, "compound_statement"); 
+	var_declaration = new char[20], strcpy (var_declaration, "var_declaration"); 
+	type_specifier = new char[20], strcpy (type_specifier, "type_specifier"); 
+	declaration_list = new char[20], strcpy (declaration_list, "declaration_list"); 
+	statements = new char[20], strcpy (statements, "statements"); 
+	statement = new char[20], strcpy (statement, "statement"); 
+	expression_statement = new char[25], strcpy (expression_statement, "expression_statement"); 
+	variable = new char[20], strcpy (variable, "variable"); 
+	expression = new char[20], strcpy (expression, "expression"); 
+	logic_expression = new char[20], strcpy (logic_expression, "logic_expression"); 
+	rel_expression = new char[20], strcpy (rel_expression, "rel_expression"); 
+	simple_expression = new char[20], strcpy (simple_expression, "simple_expression"); 
+	term = new char[20], strcpy (term, "term"); 
+	unary_expression = new char[20], strcpy (unary_expression, "unary_expression"); 
+	factor = new char[20], strcpy (factor, "factor"); 
+	argument_list = new char[20], strcpy (argument_list, "argument_list"); 
+	arguments = new char[20], strcpy (arguments, "arguments"); 
+
+
+	yyin = fp;
+	yyparse();
+	
+
+	fclose(parseout);
+	fclose(logout);
+	
+	return 0;
+}
+

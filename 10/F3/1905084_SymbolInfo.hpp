@@ -5,16 +5,16 @@
 using namespace std;
 
 class SymbolInfo {    
-    char *name, *type;
+    char *name, *type, *semanticType;
     SymbolInfo *next;
     ArrayList<SymbolInfo*> *children;
-    bool isArrayType;
+    bool isArrayType, isFunctionType;
     int arraySize, startLine, endLine;
 public:
     SymbolInfo (char* name, char* type) {
         this->name = name, this->type = type;
         this->next = nullptr, this->children = nullptr;
-        this->isArrayType = false;
+        this->isArrayType = false, this->isFunctionType = false;
         this->arraySize = 0;
     };
     
@@ -55,6 +55,12 @@ public:
     int getEndLine() {
         return this->endLine;
     };
+    void setSemanticType (char* stype) {
+        this->semanticType = stype;
+    };
+    char* getSemanticType() {
+        return this->semanticType;
+    }
 
 
     void addChild (SymbolInfo* c) {
@@ -75,6 +81,12 @@ public:
     };
     int getArraySize() {
         return this->arraySize;
+    };
+    void setFunction() {
+        this->isFunctionType = true;
+    };
+    bool isFunction() {
+        return this->isFunctionType;
     };
 
 };

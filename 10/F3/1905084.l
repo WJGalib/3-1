@@ -14,16 +14,23 @@ using namespace std;
 extern int line_count, err_count;
 extern FILE *logout, *tokenout;
 extern SymbolTable* st;
+extern char *tINT, *tFLOAT, *tVOID;
 
-char* str_upr (char* str) {
-	int l = strlen(str);
-	char* r = new char[l+2];
-	strcpy (r, str);
-	for (int i=0; i<l; i++) {
-		if (r[i] >= 'a' && r[i] <= 'z') r[i] -= 32;
-	};
-	return r;
-};
+// char* str_upr (char* str) {
+// 	int l = strlen(str);
+// 	char* r = new char[l+2];
+// 	strcpy (r, str);
+// 	for (int i=0; i<l; i++) {
+// 		if (r[i] >= 'a' && r[i] <= 'z') r[i] -= 32;
+// 	};
+// 	return r;
+// };
+
+// void print_and_log_keyword() {
+// 	char* y = str_upr(yytext);
+// 	print_and_log_token (y);
+// };
+
 
 void log_token (const char* token) {
 	fprintf(logout,"Line# %d: Token <%s> Lexeme %s found\n", line_count, token, yytext);
@@ -36,8 +43,13 @@ void log_err (const char* err) {
 
 void print_and_log_token (const char* token) {
 	//fprintf(tokenout,"<%s, %s>\n", token, yytext);
-	char* type = new char[strlen(token)+2];
-	strcpy (type, token);
+	char* type;
+	if (token != tINT && token != tFLOAT && token != tVOID){ 
+		type = new char[strlen(token)+2];
+		strcpy (type, token);
+	} else {
+		type = (char*)token;
+	};
 	//cout << "!!!!!" << yytext << endl;
 	char* name = new char[strlen(yytext)+2];
 	strcpy (name, yytext);
@@ -46,11 +58,6 @@ void print_and_log_token (const char* token) {
 	yylval.symbol->setEndLine (line_count);
 	//cout << line_count << endl;
 	log_token (token);
-};
-
-void print_and_log_keyword() {
-	char* y = str_upr(yytext);
-	print_and_log_token (y);
 };
 
 char unescape_seq (char escape_seq) {
@@ -160,19 +167,18 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 {MLCMT}		{ log_token("MULTI LINE COMMENT"),  newline_check(); }
 {UNFINCMT} 	{ newline_check(), log_err("UNFINISHED_COMMENT"); 	 }
 
-"if" 		{ print_and_log_keyword(); return IF;		}	
-"else"		{ print_and_log_keyword(); return ELSE; 	}		
-"for"		{ print_and_log_keyword(); return FOR; 		}	
-"while"		{ print_and_log_keyword(); return WHILE; 	}	
-"int"		{ print_and_log_keyword(); return INT; 		}	
-"char"		{ print_and_log_keyword(); return CHAR; 	}	
-"float"		{ print_and_log_keyword(); return FLOAT; 	}	
-"double"	{ print_and_log_keyword(); return DOUBLE; 	}	
-"void"		{ print_and_log_keyword(); return VOID; 	}	
-"return"	{ print_and_log_keyword(); return RETURN; 	}	
+"if" 		{ print_and_log_token("PRINTLN");	return IF;		}	
+"else"		{ print_and_log_token("ELSE"); 		return ELSE; 	}		
+"for"		{ print_and_log_token("FOR"); 		return FOR; 		}	
+"while"		{ print_and_log_token("WHILE"); 	return WHILE; 	}	
+"int"		{ print_and_log_token(tINT); 		return INT; 		}	
+"char"		{ print_and_log_token("CHAR");		return CHAR; 	}	
+"float"		{ print_and_log_token(tFLOAT); 		return FLOAT; 	}	
+"double"	{ print_and_log_token("DOUBLE"); 	return DOUBLE; 	}	
+"void"		{ print_and_log_token(tVOID); 		return VOID; 	}	
+"return"	{ print_and_log_token("RETURN");	return RETURN; 	}	
 
 "printf" 	{ print_and_log_token("PRINTLN"); return PRINTLN; }
-
 "+"|"-"		{ print_and_log_token("ADDOP");   return ADDOP;  }
 "*"|"/"|"%"	{ print_and_log_token("MULOP");   return MULOP;  }
 "++"		{ print_and_log_token("INCOP");	  return INCOP;  }
@@ -186,8 +192,8 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 ")"  { print_and_log_token("RPAREN");	 return RPAREN;   }
 "{"  { print_and_log_token("LCURL"); 	 return LCURL; }
 "}"  { print_and_log_token("RCURL"); 	 return RCURL; }
-"["  { print_and_log_token("LSQUARE");   return LTHIRD;	  }
-"]"  { print_and_log_token("RSQUARE");   return RTHIRD;   }
+"["  { print_and_log_token("LSQUARE");   return LSQUARE;	  }
+"]"  { print_and_log_token("RSQUARE");   return RSQUARE;   }
 ","  { print_and_log_token("COMMA");  	 return COMMA;	  }
 ";"  { print_and_log_token("SEMICOLON"); return SEMICOLON;}
 

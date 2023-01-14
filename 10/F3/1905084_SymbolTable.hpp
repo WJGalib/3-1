@@ -62,12 +62,26 @@ public:
         return curr->insert (name, type);
     };
 
+    bool insert (SymbolInfo* x) {
+        return curr->insert(x);
+    };
+
+    bool insertToParentScope (SymbolInfo* x) {
+        cout << __LINE__ << endl;
+        return curr->getParent()->insert(x);
+    };  
+
     bool remove (char* name) {
         return curr->deleteKey(name);
     };
 
     SymbolInfo* lookUp (char* name) {
         return lookUpScope (name, this->curr);
+    };
+
+    SymbolInfo* lookUpCurrentScope (char* name) {
+        SymbolInfo* s = curr->lookUp(name);
+        return s; 
     };
 
     void printCurrScope(FILE* logout = stdout) {

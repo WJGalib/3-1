@@ -1,0 +1,32 @@
+Line# 1: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 1: Token <ID> Lexeme x found
+Line# 1: Token <COMMA> Lexeme , found
+declaration_list : ID 
+Line# 1: Token <ID> Lexeme y found
+Line# 1: Token <COMMA> Lexeme , found
+declaration_list : declaration_list COMMA ID 
+Line# 1: Token <ID> Lexeme z found
+Line# 1: Token <SEMICOLON> Lexeme ; found
+declaration_list : declaration_list COMMA ID 
+var_declaration : type_specifier declaration_list SEMICOLON 
+unit : var_declaration 
+program : unit 
+Line# 1: Token <FLOAT> Lexeme float found
+type_specifier : FLOAT 
+Line# 1: Token <ID> Lexeme a found
+Line# 1: Token <SEMICOLON> Lexeme ; found
+declaration_list : ID 
+var_declaration : type_specifier declaration_list SEMICOLON 
+unit : var_declaration 
+program : program unit 
+Line# 3: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 3: Token <ID> Lexeme var found
+Line# 3: Token <LPAREN> Lexeme ( found
+Line# 3: Token <INT> Lexeme int found
+type_specifier : INT 
+Line# 3: Token <ADDOP> Lexeme - found
+parameter_list : type_specifier 
+Total Lines: 3
+Total Errors: 0

@@ -77,8 +77,8 @@ extern int yydebug;
     RPAREN = 278,                  /* RPAREN  */
     LCURL = 279,                   /* LCURL  */
     RCURL = 280,                   /* RCURL  */
-    LTHIRD = 281,                  /* LTHIRD  */
-    RTHIRD = 282,                  /* RTHIRD  */
+    LSQUARE = 281,                 /* LSQUARE  */
+    RSQUARE = 282,                 /* RSQUARE  */
     COMMA = 283,                   /* COMMA  */
     SEMICOLON = 284,               /* SEMICOLON  */
     CONST_INT = 285,               /* CONST_INT  */
@@ -87,7 +87,8 @@ extern int yydebug;
     SINGLE_LINE_STRING = 288,      /* SINGLE_LINE_STRING  */
     MULTI_LINE_STRING = 289,       /* MULTI_LINE_STRING  */
     ID = 290,                      /* ID  */
-    PRINTLN = 291                  /* PRINTLN  */
+    PRINTLN = 291,                 /* PRINTLN  */
+    LOWER_THAN_ELSE = 292          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -119,8 +120,8 @@ extern int yydebug;
 #define RPAREN 278
 #define LCURL 279
 #define RCURL 280
-#define LTHIRD 281
-#define RTHIRD 282
+#define LSQUARE 281
+#define RSQUARE 282
 #define COMMA 283
 #define SEMICOLON 284
 #define CONST_INT 285
@@ -130,16 +131,17 @@ extern int yydebug;
 #define MULTI_LINE_STRING 289
 #define ID 290
 #define PRINTLN 291
+#define LOWER_THAN_ELSE 292
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 96 "1905084.y"
+#line 102 "1905084.y"
 
 	SymbolInfo* symbol;
 
-#line 143 "y.tab.h"
+#line 145 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

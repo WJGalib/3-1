@@ -24,18 +24,6 @@ class ScopeTable {
         if (next) deleteChain(next);
     };
 
-    bool insert (SymbolInfo* x) {
-        unsigned long long int i = h1(x->getName(), N) % N;
-        int j = 0;
-        if (!T[i]) T[i] = x;
-        else {
-            SymbolInfo* r = T[i];
-            while (r->getNext()) r = r->getNext(), j++;
-            r->setNext(x), j++;
-        };
-        //cout << "\tInserted in ScopeTable# " << this->id << " at position " << i+1 << ", " << j+1 << endl;
-        return true;
-    };
 
 public:
 
@@ -49,7 +37,7 @@ public:
     };
 
     ~ScopeTable() {
-        for (int i=0; i<N; i++) if (T[i]) deleteChain(T[i]);
+        //for (int i=0; i<N; i++) if (T[i]) deleteChain(T[i]);
         delete[] T;
         //cout << "\tScopeTable# " << this->id << " removed" << endl;
         //cout << "table destroyed!!" << endl;
@@ -65,6 +53,20 @@ public:
 
     int getId() {
         return this->id;
+    };
+
+    bool insert (SymbolInfo* x) {
+        if (lookUp(x->getName(), true)) return false;
+        unsigned long long int i = h1(x->getName(), N) % N;
+        int j = 0;
+        if (!T[i]) T[i] = x;
+        else {
+            SymbolInfo* r = T[i];
+            while (r->getNext()) r = r->getNext(), j++;
+            r->setNext(x), j++;
+        };
+        //cout << "\tInserted in ScopeTable# " << this->id << " at position " << i+1 << ", " << j+1 << endl;
+        return true;
     };
 
     bool insert (char* name, char* type) {
@@ -123,7 +125,9 @@ public:
                 fprintf (logout, "\t%d--> ", i+1);
                 for (SymbolInfo* r = T[i]; r; r = r->getNext())
                     //cout << "<" << r->getName() << "," << r->getType() << "> ";
-                    fprintf (logout, "<%s,%s> ", r->getName(), r->getType());
+                    if (r->isFunction()) fprintf (logout, "<%s, FUNCTION, %s> ", r->getName(), r->getSemanticType());
+                    else if (r->isArray()) fprintf (logout, "<%s, ARRAY, %s> ", r->getName(), r->getSemanticType());
+                    else fprintf (logout, "<%s, %s> ", r->getName(), r->getSemanticType());
                 //cout << endl;
                 fprintf (logout, "\n");
             };

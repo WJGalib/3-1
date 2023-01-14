@@ -93,8 +93,8 @@ MULOP [*/%]
 ")" 	{return RPAREN;}
 "{" 	{return LCURL;}
 "}" 	{return RCURL;}
-"[" 	{return LTHIRD;}
-"]" 	{return RTHIRD;}
+"[" 	{return LSQUARE;}
+"]" 	{return RSQUARE;}
 "++" 	{return INCOP;}
 "--" 	{return DECOP;}
 

@@ -14,14 +14,16 @@ int yylex(void);
 
 int line_count = 1, err_count = 0;
 extern FILE *yyin;
-FILE *fp, *parseout, *logout;
+bool function_scope = false;
+FILE *fp, *parseout, *errorout, *logout;
 
-extern SymbolTable* table;
-ArrayList<SymbolInfo*> *var_list;
+SymbolTable* st;
+ArrayList<SymbolInfo*> *var_list, *param_list;
 
-char  *NON_TERMINAL, *start, *program, *unit, *func_declaration, *func_definition, *parameter_list, *compound_statement, 
-	  *var_declaration, *type_specifier, *declaration_list, *statements, *statement, *expression_statement, *variable, *expression, 
-	  *logic_expression, *rel_expression, *simple_expression, *term, *unary_expression, *factor, *argument_list, *arguments;
+char  *NON_TERMINAL, *tINT, *tFLOAT, *tVOID, *start, *program, *unit, *func_declaration, *func_definition, *parameter_list, 
+	  *compound_statement, *var_declaration, *type_specifier, *declaration_list, *statements, *statement, *expression_statement, 
+	  *variable, *expression, *logic_expression, *rel_expression, *simple_expression, *term, *unary_expression, *factor, 
+	  *argument_list, *arguments;
 
 void yyerror(char *s) {
 	//write your code
@@ -87,6 +89,10 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 	}
 };
 
+void print_error (const char* error) {
+	fprintf (errorout, "Line# 20: %s", error); 
+}
+
 // void print_parse_tree (SymbolInfo** symbol, int depth = 1) {
 // 	print_parse_tree (*symbol, depth);
 // }
@@ -97,14 +103,13 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 	SymbolInfo* symbol;
 }
 
-%token <symbol> IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR VOID RETURN ADDOP MULOP INCOP DECOP LOGICOP RELOP ASSIGNOP BITOP NOT LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD COMMA SEMICOLON CONST_INT CONST_FLOAT CONST_CHAR SINGLE_LINE_STRING MULTI_LINE_STRING ID PRINTLN
+%token <symbol> IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR VOID RETURN ADDOP MULOP INCOP DECOP LOGICOP RELOP ASSIGNOP BITOP NOT LPAREN RPAREN LCURL RCURL LSQUARE RSQUARE COMMA SEMICOLON CONST_INT CONST_FLOAT CONST_CHAR SINGLE_LINE_STRING MULTI_LINE_STRING ID PRINTLN
 
-%type <symbol> start program unit func_declaration func_definition parameter_list compound_statement var_declaration type_specifier declaration_list statements statement expression_statement variable expression logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments
-/* 
-%left 
-%right
+%type <symbol> start program unit func_declaration func_definition parameter_list compound_statement var_declaration type_specifier declaration_list statements statement expression_statement variable expression logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments 
 
-%nonassoc  */
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 
 %%
@@ -124,58 +129,135 @@ unit : var_declaration  { add_children_and_log (&$$, unit, 1, &$1); }
      | func_definition  { add_children_and_log (&$$, unit, 1, &$1); }
      ;
      
-func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON { add_children_and_log (&$$, func_declaration, 6, &$1, &$2, &$3, &$4, &$5, &$6); }
-		| type_specifier ID LPAREN RPAREN SEMICOLON  { add_children_and_log (&$$, func_declaration, 5, &$1, &$2, &$3, &$4, &$5); }
+func_declaration : type_specifier ID LPAREN start_func_scope parameter_list RPAREN SEMICOLON { 
+			for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
+				SymbolInfo *param = param_list->getValue(), *lu = st->lookUpCurrentScope(param->getName());
+				if (lu != nullptr) {
+					fprintf (errorout, "Line# %d: Redefinition of parameter '%s'\n", lu->getStartLine(), param->getName()); 
+					break;
+				};
+				st->insert(param);
+			};
+			delete param_list;
+			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			st->insertToParentScope($2);
+			//st->printAllScope(logout);
+			st->exitScope();
+			add_children_and_log (&$$, func_declaration, 6, &$1, &$2, &$3, &$5, &$6, &$7); 
+		}
+		| type_specifier ID LPAREN RPAREN SEMICOLON  { 
+			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			st->insert($2);
+			//st->printAllScope(logout);
+			add_children_and_log (&$$, func_declaration, 5, &$1, &$2, &$3, &$4, &$5); 
+		}
 		;
 		 
-func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement { add_children_and_log (&$$, func_definition, 6, &$1, &$2, &$3, &$4, &$5, &$6); }
-		| type_specifier ID LPAREN RPAREN compound_statement { add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$5); }
+func_definition : type_specifier ID LPAREN start_func_scope parameter_list RPAREN compound_statement { 
+			for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
+				SymbolInfo* param = param_list->getValue();
+				if (st->lookUpCurrentScope(param->getName())) {
+					fprintf (errorout, "Line# %d: Redefinition of parameter '%s'\n", line_count, param->getName()); 
+					break;
+				};
+				st->insert(param);
+			};
+			delete param_list;
+			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			st->insertToParentScope($2);
+			st->printAllScope(logout);
+			st->exitScope();
+			add_children_and_log (&$$, func_definition, 6, &$1, &$2, &$3, &$5, &$6, &$7); 
+		}
+		| type_specifier ID LPAREN RPAREN start_func_scope compound_statement { 
+			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			st->insertToParentScope($2);
+			st->printAllScope(logout);
+			st->exitScope();
+			add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$6); 
+		}
  		;				
 
+start_func_scope : {
+	st->enterScope();
+	function_scope = true ;
+}
 
-parameter_list  : parameter_list COMMA type_specifier ID  { add_children_and_log (&$$, parameter_list, 4, &$1, &$2, &$3, &$4); }
-		| parameter_list COMMA type_specifier { add_children_and_log (&$$, parameter_list, 3, &$1, &$2, &$3); }	
- 		| type_specifier ID { add_children_and_log (&$$, parameter_list, 2, &$1, &$2); }
-		| type_specifier { add_children_and_log (&$$, parameter_list, 1, &$1); }
+parameter_list  : parameter_list COMMA type_specifier ID  { 
+			add_children_and_log (&$$, parameter_list, 4, &$1, &$2, &$3, &$4);
+			$4->setSemanticType ($3->getSemanticType());
+			 param_list->append($4);
+			//cout << st->getCurrScopeId() << " " << $4->getName() << endl;
+		}
+		| parameter_list COMMA type_specifier { 
+			add_children_and_log (&$$, parameter_list, 3, &$1, &$2, &$3); 
+			param_list->append($3);
+		}	
+ 		| type_specifier ID { 
+			add_children_and_log (&$$, parameter_list, 2, &$1, &$2); 
+			param_list = new ArrayList<SymbolInfo*>();
+			$2->setSemanticType ($1->getSemanticType());
+			param_list->append($2);
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+		}
+		| type_specifier { 
+			add_children_and_log (&$$, parameter_list, 1, &$1); 
+			param_list = new ArrayList<SymbolInfo*>();
+			param_list->append($1);
+		}
  		;
 
  		
-compound_statement : LCURL statements RCURL  { add_children_and_log (&$$, compound_statement, 3, &$1, &$2, &$3); }	
+compound_statement : LCURL {if (!function_scope) st->enterScope();} statements RCURL  { 
+				add_children_and_log (&$$, compound_statement, 3, &$1, &$3, &$4); 
+				if (!function_scope) {
+					st->printAllScope(logout);
+					st->exitScope();
+				};
+				function_scope = false;
+			}	
  		    | LCURL RCURL { add_children_and_log (&$$, compound_statement, 2, &$1, &$2); }
  		    ;
  		    
 var_declaration : type_specifier declaration_list SEMICOLON {
 			add_children_and_log (&$$, var_declaration, 3, &$1, &$2, &$3);
 			for (var_list->moveToStart(); var_list->currPos() < var_list->length(); var_list->next()) {
-				//insert into symbol table
+				SymbolInfo* var = var_list->getValue();
+				var->setSemanticType ($1->getSemanticType());
+				st->insert(var);
 			};
+			delete var_list;
 		 }
  		 ;
  		 
-type_specifier	: INT { add_children_and_log (&$$, type_specifier, 1, &$1); }
- 		| FLOAT	{ add_children_and_log (&$$, type_specifier, 1, &$1); }
- 		| VOID	{ add_children_and_log (&$$, type_specifier, 1, &$1); }
+type_specifier	: INT { add_children_and_log (&$$, type_specifier, 1, &$1), $$->setSemanticType($1->getType()); }
+ 		| FLOAT	{ add_children_and_log (&$$, type_specifier, 1, &$1), $$->setSemanticType($1->getType()); }
+ 		| VOID	{ add_children_and_log (&$$, type_specifier, 1, &$1), $$->setSemanticType($1->getType()); }
  		;
  		
 declaration_list : declaration_list COMMA ID {
 			add_children_and_log (&$$, declaration_list, 3, &$1, &$2, &$3);
-			// var_list->append($3);
+			var_list->append($3);
 		  }
- 		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD {
+ 		  | declaration_list COMMA ID LSQUARE CONST_INT RSQUARE {
 			add_children_and_log (&$$, declaration_list, 6, &$1, &$2, &$3, &$4, &$5, &$6);
-			// $3->setArray();
-			// var_list->append($3);
+			$3->setArray();
+			var_list->append($3);
 		  }
  		  | ID {
 			add_children_and_log (&$$, declaration_list, 1, &$1);
 			var_list = new ArrayList<SymbolInfo*>();
-			// var_list->append($1);
+			var_list->append($1);
 		  }
- 		  | ID LTHIRD CONST_INT RTHIRD {
+ 		  | ID LSQUARE CONST_INT RSQUARE {
 			add_children_and_log (&$$, declaration_list, 4, &$1, &$2, &$3, &$4);
 			var_list = new ArrayList<SymbolInfo*>();
-			// $3->setArray();
-			// var_list->append($1);
+			$1->setArray();
+			var_list->append($1);
 		  }
  		  ;
  		  
@@ -187,7 +269,7 @@ statement : var_declaration { add_children_and_log (&$$, statement, 1, &$1); }
 	  | expression_statement { add_children_and_log (&$$, statement, 1, &$1); }
 	  | compound_statement { add_children_and_log (&$$, statement, 1, &$1); }
 	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement { add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); }
-	  | IF LPAREN expression RPAREN statement { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
+	  | IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | IF LPAREN expression RPAREN statement ELSE statement { add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); }
 	  | WHILE LPAREN expression RPAREN statement { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
@@ -199,7 +281,7 @@ expression_statement : SEMICOLON { add_children_and_log (&$$, expression_stateme
 			;
 	  
 variable : ID { add_children_and_log (&$$, variable, 1, &$1); }
-	 | ID LTHIRD expression RTHIRD { add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4); }
+	 | ID LSQUARE expression RSQUARE { add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4); }
 	 ;
 	 
 expression : logic_expression { add_children_and_log (&$$, expression, 1, &$1); }
@@ -251,16 +333,14 @@ int main (int argc, char *argv[]) {
 		printf("Cannot Open Input File.\n");
 		exit(1);
 	};
-
 	parseout = fopen(argv[2],"w");
-	/* fclose(fp2); */
-	logout = fopen(argv[3],"w");
-	/* fclose(fp3); */
-	
-	/* fp2= fopen(argv[2],"a");
-	fp3= fopen(argv[3],"a"); */
+	errorout = fopen(argv[3],"w");
+	logout = fopen(argv[4],"w");
 	
 	NON_TERMINAL = new char[20], strcpy (NON_TERMINAL, "NON_TERMINAL"); 
+	tINT = new char[10], strcpy (tINT, "INT"); 
+	tFLOAT = new char[10], strcpy (tFLOAT, "FLOAT"); 
+	tVOID = new char[10], strcpy (tVOID, "VOID"); 
 	start = new char[20], strcpy (start, "start"); 
 	program = new char[20], strcpy (program, "program"); 
 	unit = new char[20], strcpy (unit, "unit"); 
@@ -286,10 +366,11 @@ int main (int argc, char *argv[]) {
 	arguments = new char[20], strcpy (arguments, "arguments"); 
 
 	yyin = fp;
+	st = new SymbolTable(11);
 	yyparse();
  	fprintf(logout, "Total Lines: %d\n", line_count);
  	fprintf(logout, "Total Errors: %d\n", err_count);
-	fclose(parseout), fclose(logout);
+	fclose(parseout), fclose(errorout), fclose(logout);
 	
 	return 0;
 }

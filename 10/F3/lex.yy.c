@@ -609,16 +609,23 @@ using namespace std;
 extern int line_count, err_count;
 extern FILE *logout, *tokenout;
 extern SymbolTable* st;
+extern char *tINT, *tFLOAT, *tVOID;
 
-char* str_upr (char* str) {
-	int l = strlen(str);
-	char* r = new char[l+2];
-	strcpy (r, str);
-	for (int i=0; i<l; i++) {
-		if (r[i] >= 'a' && r[i] <= 'z') r[i] -= 32;
-	};
-	return r;
-};
+// char* str_upr (char* str) {
+// 	int l = strlen(str);
+// 	char* r = new char[l+2];
+// 	strcpy (r, str);
+// 	for (int i=0; i<l; i++) {
+// 		if (r[i] >= 'a' && r[i] <= 'z') r[i] -= 32;
+// 	};
+// 	return r;
+// };
+
+// void print_and_log_keyword() {
+// 	char* y = str_upr(yytext);
+// 	print_and_log_token (y);
+// };
+
 
 void log_token (const char* token) {
 	fprintf(logout,"Line# %d: Token <%s> Lexeme %s found\n", line_count, token, yytext);
@@ -631,8 +638,13 @@ void log_err (const char* err) {
 
 void print_and_log_token (const char* token) {
 	//fprintf(tokenout,"<%s, %s>\n", token, yytext);
-	char* type = new char[strlen(token)+2];
-	strcpy (type, token);
+	char* type;
+	if (token != tINT && token != tFLOAT && token != tVOID){ 
+		type = new char[strlen(token)+2];
+		strcpy (type, token);
+	} else {
+		type = (char*)token;
+	};
 	//cout << "!!!!!" << yytext << endl;
 	char* name = new char[strlen(yytext)+2];
 	strcpy (name, yytext);
@@ -641,11 +653,6 @@ void print_and_log_token (const char* token) {
 	yylval.symbol->setEndLine (line_count);
 	//cout << line_count << endl;
 	log_token (token);
-};
-
-void print_and_log_keyword() {
-	char* y = str_upr(yytext);
-	print_and_log_token (y);
 };
 
 char unescape_seq (char escape_seq) {
@@ -701,8 +708,8 @@ char* string_action (bool multi) {
 	return str;
 };
 
-#line 705 "lex.yy.c"
-#line 706 "lex.yy.c"
+#line 712 "lex.yy.c"
+#line 713 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -919,13 +926,13 @@ YY_DECL
 		}
 
 	{
-#line 152 "1905084.l"
+#line 159 "1905084.l"
 
 
-#line 155 "1905084.l"
+#line 162 "1905084.l"
 	//==================================== SECTION - 2 ==================================
 
-#line 929 "lex.yy.c"
+#line 936 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -984,196 +991,196 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 157 "1905084.l"
+#line 164 "1905084.l"
 { /*do nothing*/}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 158 "1905084.l"
+#line 165 "1905084.l"
 { line_count++; }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 160 "1905084.l"
+#line 167 "1905084.l"
 { log_token("SINGLE LINE COMMENT"), newline_check(); }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 161 "1905084.l"
+#line 168 "1905084.l"
 { log_token("MULTI LINE COMMENT"),  newline_check(); }
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 162 "1905084.l"
+#line 169 "1905084.l"
 { newline_check(), log_err("UNFINISHED_COMMENT"); 	 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 164 "1905084.l"
-{ print_and_log_keyword(); return IF;		}	
+#line 171 "1905084.l"
+{ print_and_log_token("PRINTLN");	return IF;		}	
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 165 "1905084.l"
-{ print_and_log_keyword(); return ELSE; 	}		
+#line 172 "1905084.l"
+{ print_and_log_token("ELSE"); 		return ELSE; 	}		
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 166 "1905084.l"
-{ print_and_log_keyword(); return FOR; 		}	
+#line 173 "1905084.l"
+{ print_and_log_token("FOR"); 		return FOR; 		}	
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 167 "1905084.l"
-{ print_and_log_keyword(); return WHILE; 	}	
+#line 174 "1905084.l"
+{ print_and_log_token("WHILE"); 	return WHILE; 	}	
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 168 "1905084.l"
-{ print_and_log_keyword(); return INT; 		}	
+#line 175 "1905084.l"
+{ print_and_log_token(tINT); 		return INT; 		}	
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 169 "1905084.l"
-{ print_and_log_keyword(); return CHAR; 	}	
+#line 176 "1905084.l"
+{ print_and_log_token("CHAR");		return CHAR; 	}	
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 170 "1905084.l"
-{ print_and_log_keyword(); return FLOAT; 	}	
+#line 177 "1905084.l"
+{ print_and_log_token(tFLOAT); 		return FLOAT; 	}	
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 171 "1905084.l"
-{ print_and_log_keyword(); return DOUBLE; 	}	
+#line 178 "1905084.l"
+{ print_and_log_token("DOUBLE"); 	return DOUBLE; 	}	
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 172 "1905084.l"
-{ print_and_log_keyword(); return VOID; 	}	
+#line 179 "1905084.l"
+{ print_and_log_token(tVOID); 		return VOID; 	}	
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 173 "1905084.l"
-{ print_and_log_keyword(); return RETURN; 	}	
+#line 180 "1905084.l"
+{ print_and_log_token("RETURN");	return RETURN; 	}	
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 175 "1905084.l"
+#line 182 "1905084.l"
 { print_and_log_token("PRINTLN"); return PRINTLN; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 177 "1905084.l"
+#line 183 "1905084.l"
 { print_and_log_token("ADDOP");   return ADDOP;  }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 178 "1905084.l"
+#line 184 "1905084.l"
 { print_and_log_token("MULOP");   return MULOP;  }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 179 "1905084.l"
+#line 185 "1905084.l"
 { print_and_log_token("INCOP");	  return INCOP;  }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 180 "1905084.l"
+#line 186 "1905084.l"
 { print_and_log_token("DECOP");	  return DECOP;  }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 181 "1905084.l"
+#line 187 "1905084.l"
 { print_and_log_token("LOGICOP"); return LOGICOP;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 182 "1905084.l"
+#line 188 "1905084.l"
 { print_and_log_token("BITOP"); return BITOP; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 183 "1905084.l"
+#line 189 "1905084.l"
 { print_and_log_token("RELOP"); return RELOP; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 184 "1905084.l"
+#line 190 "1905084.l"
 { print_and_log_token("ASSIGNOP");  return ASSIGNOP; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 185 "1905084.l"
+#line 191 "1905084.l"
 { print_and_log_token("NOT"); 		 return NOT;	  }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 186 "1905084.l"
+#line 192 "1905084.l"
 { print_and_log_token("LPAREN");	 return LPAREN;   }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 187 "1905084.l"
+#line 193 "1905084.l"
 { print_and_log_token("RPAREN");	 return RPAREN;   }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 188 "1905084.l"
+#line 194 "1905084.l"
 { print_and_log_token("LCURL"); 	 return LCURL; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 189 "1905084.l"
+#line 195 "1905084.l"
 { print_and_log_token("RCURL"); 	 return RCURL; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 190 "1905084.l"
-{ print_and_log_token("LSQUARE");   return LTHIRD;	  }
+#line 196 "1905084.l"
+{ print_and_log_token("LSQUARE");   return LSQUARE;	  }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 191 "1905084.l"
-{ print_and_log_token("RSQUARE");   return RTHIRD;   }
+#line 197 "1905084.l"
+{ print_and_log_token("RSQUARE");   return RSQUARE;   }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 192 "1905084.l"
+#line 198 "1905084.l"
 { print_and_log_token("COMMA");  	 return COMMA;	  }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 193 "1905084.l"
+#line 199 "1905084.l"
 { print_and_log_token("SEMICOLON"); return SEMICOLON;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 196 "1905084.l"
+#line 202 "1905084.l"
 { print_and_log_token("CONST_INT"); return CONST_INT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 197 "1905084.l"
+#line 203 "1905084.l"
 { log_err("TOO_MANY_DECIMAL_POINTS"); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 198 "1905084.l"
+#line 204 "1905084.l"
 { print_and_log_token("CONST_FLOAT"); return CONST_FLOAT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 199 "1905084.l"
+#line 205 "1905084.l"
 { log_err("ILLFORMED_NUMBER"); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 201 "1905084.l"
+#line 207 "1905084.l"
 {
 	char* str = new char[2];
 	if (yytext[1] != '\\') {
@@ -1197,22 +1204,22 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 222 "1905084.l"
+#line 228 "1905084.l"
 { log_err("MULTICHAR_CONST_CHAR");  }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 223 "1905084.l"
+#line 229 "1905084.l"
 { log_err("UNFINISHED_CONST_CHAR"); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 224 "1905084.l"
+#line 230 "1905084.l"
 { log_err("EMPTY_CONST_CHAR"); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 226 "1905084.l"
+#line 232 "1905084.l"
 { 
 	yylval.symbol = new SymbolInfo (string_action(false), "SINGLE_LINE_STRING");
 	yylval.symbol->setStartLine (line_count);
@@ -1224,7 +1231,7 @@ YY_RULE_SETUP
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 233 "1905084.l"
+#line 239 "1905084.l"
 {
 	yylval.symbol = new SymbolInfo (string_action(true), "MULTI_LINE_STRING");
 	yylval.symbol->setStartLine (line_count);
@@ -1236,12 +1243,12 @@ YY_RULE_SETUP
 case 44:
 /* rule 44 can match eol */
 YY_RULE_SETUP
-#line 240 "1905084.l"
+#line 246 "1905084.l"
 { newline_check(), log_err("UNFINISHED_STRING"); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 242 "1905084.l"
+#line 248 "1905084.l"
 {
 	log_token("ID");
 	char* id = new char[5]; strcpy(id, "ID");
@@ -1256,20 +1263,20 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 254 "1905084.l"
+#line 260 "1905084.l"
 { log_err("INVALID_ID_SUFFIX_NUM_PREFIX"); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 256 "1905084.l"
+#line 262 "1905084.l"
 { log_err("UNRECOGNIZED_CHAR"); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 258 "1905084.l"
+#line 264 "1905084.l"
 ECHO;
 	YY_BREAK
-#line 1273 "lex.yy.c"
+#line 1280 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2274,7 +2281,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 258 "1905084.l"
+#line 264 "1905084.l"
 
 
 //==================================== SECTION - 3 ============================================

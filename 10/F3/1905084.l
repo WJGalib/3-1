@@ -43,20 +43,18 @@ void log_err (const char* err) {
 
 void print_and_log_token (const char* token) {
 	//fprintf(tokenout,"<%s, %s>\n", token, yytext);
-	char* type;
+	char* type; bool literal = false;
 	if (token != tINT && token != tFLOAT && token != tVOID){ 
 		type = new char[strlen(token)+2];
 		strcpy (type, token);
 	} else {
 		type = (char*)token;
 	};
-	//cout << "!!!!!" << yytext << endl;
 	char* name = new char[strlen(yytext)+2];
 	strcpy (name, yytext);
 	yylval.symbol = new SymbolInfo (name, type);
 	yylval.symbol->setStartLine (line_count);
 	yylval.symbol->setEndLine (line_count);
-	//cout << line_count << endl;
 	log_token (token);
 };
 
@@ -177,8 +175,8 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 "double"	{ print_and_log_token("DOUBLE"); 	return DOUBLE; 	}	
 "void"		{ print_and_log_token(tVOID); 		return VOID; 	}	
 "return"	{ print_and_log_token("RETURN");	return RETURN; 	}	
+"println" 	{ print_and_log_token("PRINTLN"); 	return PRINTLN; }
 
-"printf" 	{ print_and_log_token("PRINTLN"); return PRINTLN; }
 "+"|"-"		{ print_and_log_token("ADDOP");   return ADDOP;  }
 "*"|"/"|"%"	{ print_and_log_token("MULOP");   return MULOP;  }
 "++"		{ print_and_log_token("INCOP");	  return INCOP;  }
@@ -198,9 +196,9 @@ NUMIDENTIFIER ({DIGIT}|_)({ALNUM}|_)*
 ";"  { print_and_log_token("SEMICOLON"); return SEMICOLON;}
 
 
-{DIGITS}	  { print_and_log_token("CONST_INT"); return CONST_INT; }
+{DIGITS}	  { print_and_log_token("CONST_INT"); yylval.symbol->setSemanticType(tINT); return CONST_INT; }
 {EXTRAPOINTS} { log_err("TOO_MANY_DECIMAL_POINTS"); }
-{FLOATING} 	  { print_and_log_token("CONST_FLOAT"); return CONST_FLOAT; }
+{FLOATING} 	  { print_and_log_token("CONST_FLOAT"); yylval.symbol->setSemanticType(tFLOAT); return CONST_FLOAT; }
 {ILLFORMED}   { log_err("ILLFORMED_NUMBER"); }
 
 {CHARLIT} {

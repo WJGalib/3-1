@@ -45,6 +45,7 @@ public:
     };
 
     bool exitScope() {
+        cout << "exiting scope " << endl;
         ScopeTable* currParent = curr->getParent();
         if (currParent) {
             delete curr;
@@ -67,7 +68,7 @@ public:
     };
 
     bool insertToParentScope (SymbolInfo* x) {
-        cout << __LINE__ << endl;
+        //cout << __LINE__ << endl;
         return curr->getParent()->insert(x);
     };  
 

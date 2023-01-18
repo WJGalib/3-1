@@ -18,7 +18,7 @@ bool function_scope = false;
 FILE *fp, *parseout, *errorout, *logout;
 
 SymbolTable* st;
-ArrayList<SymbolInfo*> *var_list, *param_list;
+ArrayList<SymbolInfo*> *var_list, *param_list, *arg_list;
 
 char  *NON_TERMINAL, *tINT, *tFLOAT, *tVOID, *start, *program, *unit, *func_declaration, *func_definition, *parameter_list, 
 	  *compound_statement, *var_declaration, *type_specifier, *declaration_list, *statements, *statement, *expression_statement, 
@@ -68,6 +68,14 @@ void add_children_and_log (SymbolInfo** parent, char* name, int n, ... ) {
 	};
 	va_end(list);
 	log_rule (*parent);
+};
+
+void transfer_semantic (SymbolInfo** parent, SymbolInfo** child) {
+	//cout << "hello" <<endl;
+	(*parent)->setSemanticType((*child)->getSemanticType());
+	if ((*child)->isArray()) (*parent)->setArray();
+	//cout << line_count << ": settign semantic type of " << (*parent)->getName() << " as " << (*child)->getSemanticType() << endl; 
+	//fprintf(logout, "setting semantic type of %s as %s\n", (*parent)->getName(), (*child)->getSemanticType());
 };
 
 void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
@@ -138,8 +146,7 @@ func_declaration : type_specifier ID LPAREN start_func_scope parameter_list RPAR
 				};
 				st->insert(param);
 			};
-			delete param_list;
-			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
 			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insertToParentScope($2);
 			//st->printAllScope(logout);
@@ -147,7 +154,7 @@ func_declaration : type_specifier ID LPAREN start_func_scope parameter_list RPAR
 			add_children_and_log (&$$, func_declaration, 6, &$1, &$2, &$3, &$5, &$6, &$7); 
 		}
 		| type_specifier ID LPAREN RPAREN SEMICOLON  { 
-			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			transfer_semantic (&$2, &$1), $2->setFunction();
 			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insert($2);
 			//st->printAllScope(logout);
@@ -156,28 +163,38 @@ func_declaration : type_specifier ID LPAREN start_func_scope parameter_list RPAR
 		;
 		 
 func_definition : type_specifier ID LPAREN start_func_scope parameter_list RPAREN compound_statement { 
+			SymbolInfo* predefined = st->lookUp($2->getName());
+			if (predefined) {
+				if (predefined->isFunction()) {
+					if (predefined->getSemanticType() != $1->getSemanticType() || predefined->getParams()->length() != param_list->length())
+						fprintf (errorout, "Line# %d: Conflicting types for '%s'\n", $2->getStartLine(), predefined->getName()); 						
+				} else {
+					fprintf (errorout, "Line# %d: '%s' redeclared as different kind of symbol\n", $2->getStartLine(), predefined->getName()); 				
+				};
+			};
 			for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
 				SymbolInfo* param = param_list->getValue();
 				if (st->lookUpCurrentScope(param->getName())) {
-					fprintf (errorout, "Line# %d: Redefinition of parameter '%s'\n", line_count, param->getName()); 
+					fprintf (errorout, "Line# %d: Redefinition of parameter '%s'\n", param->getStartLine(), param->getName()); 
 					break;
 				};
 				st->insert(param);
 			};
-			delete param_list;
-			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
 			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insertToParentScope($2);
 			st->printAllScope(logout);
 			st->exitScope();
+			function_scope = false;
 			add_children_and_log (&$$, func_definition, 6, &$1, &$2, &$3, &$5, &$6, &$7); 
 		}
 		| type_specifier ID LPAREN RPAREN start_func_scope compound_statement { 
-			$2->setSemanticType ($1->getSemanticType()), $2->setFunction();
+			transfer_semantic (&$2, &$1), $2->setFunction();
 			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insertToParentScope($2);
 			st->printAllScope(logout);
 			st->exitScope();
+			function_scope = false;
 			add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$6); 
 		}
  		;				
@@ -189,7 +206,7 @@ start_func_scope : {
 
 parameter_list  : parameter_list COMMA type_specifier ID  { 
 			add_children_and_log (&$$, parameter_list, 4, &$1, &$2, &$3, &$4);
-			$4->setSemanticType ($3->getSemanticType());
+			transfer_semantic (&$4, &$3);
 			 param_list->append($4);
 			//cout << st->getCurrScopeId() << " " << $4->getName() << endl;
 		}
@@ -200,7 +217,7 @@ parameter_list  : parameter_list COMMA type_specifier ID  {
  		| type_specifier ID { 
 			add_children_and_log (&$$, parameter_list, 2, &$1, &$2); 
 			param_list = new ArrayList<SymbolInfo*>();
-			$2->setSemanticType ($1->getSemanticType());
+			transfer_semantic (&$2, &$1);
 			param_list->append($2);
 			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 		}
@@ -218,16 +235,29 @@ compound_statement : LCURL {if (!function_scope) st->enterScope();} statements R
 					st->printAllScope(logout);
 					st->exitScope();
 				};
-				function_scope = false;
 			}	
- 		    | LCURL RCURL { add_children_and_log (&$$, compound_statement, 2, &$1, &$2); }
+ 		    | LCURL RCURL { 
+				add_children_and_log (&$$, compound_statement, 2, &$1, &$2); 
+				st->enterScope();
+				st->exitScope();
+			}
  		    ;
  		    
 var_declaration : type_specifier declaration_list SEMICOLON {
 			add_children_and_log (&$$, var_declaration, 3, &$1, &$2, &$3);
 			for (var_list->moveToStart(); var_list->currPos() < var_list->length(); var_list->next()) {
 				SymbolInfo* var = var_list->getValue();
-				var->setSemanticType ($1->getSemanticType());
+				if ($1->getSemanticType() == tVOID) {
+					fprintf (errorout, "Line# %d: Variable or field '%s' decleared void\n", var->getStartLine(), var->getName()); 
+					break;
+				};
+				SymbolInfo* predefined = st->lookUpCurrentScope(var->getName());
+				if (predefined) {
+					if (predefined->getSemanticType() != $1->getSemanticType())
+						fprintf (errorout, "Line# %d: Conflicting types for '%s'\n", var->getStartLine(), predefined->getName()); 						
+				};
+				//var->setSemanticType ($1->getSemanticType());
+				transfer_semantic (&var, &$1);
 				st->insert(var);
 			};
 			delete var_list;
@@ -280,49 +310,134 @@ expression_statement : SEMICOLON { add_children_and_log (&$$, expression_stateme
 			| expression SEMICOLON  { add_children_and_log (&$$, expression_statement, 2, &$1, &$2); }
 			;
 	  
-variable : ID { add_children_and_log (&$$, variable, 1, &$1); }
-	 | ID LSQUARE expression RSQUARE { add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4); }
+variable : ID { 
+		//fprintf(logout, "Checking if '%s' is in symbol table\n", $1->getName());
+		SymbolInfo* defined = st->lookUp($1->getName());
+		add_children_and_log (&$$, variable, 1, &$1);
+		if (defined) {
+			if (!defined->isFunction()) {
+				//$1->setSemanticType(defined->getSemanticType());
+				transfer_semantic (&$1, &defined);
+			};
+		} else fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", $1->getStartLine(), $1->getName()); 
+		transfer_semantic (&$$, &$1); 
+	 }
+	 | ID LSQUARE expression RSQUARE { 
+		SymbolInfo* defined = st->lookUp($1->getName());
+		add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4);
+		if (defined) {
+			if (!defined->isFunction()) {
+				$1->setSemanticType(defined->getSemanticType());
+				//transfer_semantic (&$1, &defined);
+			};
+			if (!defined->isArray()) fprintf (errorout, "Line# %d: '%s' is not an array\n", $1->getStartLine(), $1->getName());
+			if ($3->getSemanticType() != tINT) fprintf (errorout, "Line# %d: Array subscript is not an integer\n", $1->getStartLine());
+		} else fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", $1->getStartLine(), $1->getName());
+		transfer_semantic (&$$, &$1); 
+	 }
 	 ;
 	 
-expression : logic_expression { add_children_and_log (&$$, expression, 1, &$1); }
-	   | variable ASSIGNOP logic_expression { add_children_and_log (&$$, expression, 3, &$1, &$2, &$3); }	
-	   ;
+expression : logic_expression { 
+			// if ($1->getSemanticType() == tVOID) 
+			// 	fprintf (errorout, "Line# %d: Void cannot be used in expression\n", $1->getStartLine());
+			add_children_and_log (&$$, expression, 1, &$1), transfer_semantic (&$$, &$1);
+		}
+		| variable ASSIGNOP logic_expression { 
+			if ($3->getSemanticType() == tVOID) 
+				fprintf (errorout, "Line# %d: Void cannot be used in expression\n", $1->getStartLine());
+			if ($1->getSemanticType() == tINT && $3->getSemanticType() == tFLOAT) 
+				fprintf (errorout, "Line# %d: Warning: possible loss of data in assignment of FLOAT to INT\n", $1->getStartLine());
+			add_children_and_log (&$$, expression, 3, &$1, &$2, &$3), transfer_semantic (&$$, &$1);;
+		}	
+		;
 			
-logic_expression : rel_expression 	{ add_children_and_log (&$$, logic_expression, 1, &$1); }
-		 | rel_expression LOGICOP rel_expression { add_children_and_log (&$$, logic_expression, 3, &$1, &$2, &$3); }		
+logic_expression : rel_expression 	{ add_children_and_log (&$$, logic_expression, 1, &$1), transfer_semantic (&$$, &$1); }
+		 | rel_expression LOGICOP rel_expression { 
+			add_children_and_log (&$$, logic_expression, 3, &$1, &$2, &$3); 
+			if ($1->getSemanticType() != tINT || $1->getSemanticType() != tINT)
+				fprintf (errorout, "Line# %d: Logical operator cannot be applied to non-integers\n", $1->getStartLine());
+			if ($1->getSemanticType() == tVOID) $$->setSemanticType(tVOID);
+			else $$->setSemanticType(tINT);
+		 }		
 		 ;
 			
-rel_expression	: simple_expression { add_children_and_log (&$$, rel_expression, 1, &$1); }
-		| simple_expression RELOP simple_expression	{ add_children_and_log (&$$, rel_expression, 3, &$1, &$2, &$3); }	
+rel_expression	: simple_expression { add_children_and_log (&$$, rel_expression, 1, &$1), transfer_semantic (&$$, &$1); }
+		| simple_expression RELOP simple_expression	{ 
+			add_children_and_log (&$$, rel_expression, 3, &$1, &$2, &$3); 
+			if ($1->getSemanticType() == tVOID) $$->setSemanticType(tVOID);
+			else $$->setSemanticType(tINT);
+		}	
 		;
 				
-simple_expression : term { add_children_and_log (&$$, simple_expression, 1, &$1); }
-		  | simple_expression ADDOP term { add_children_and_log (&$$, simple_expression, 3, &$1, &$2, &$3); }	
+simple_expression : term { add_children_and_log (&$$, simple_expression, 1, &$1), transfer_semantic (&$$, &$1); }
+		  | simple_expression ADDOP term { add_children_and_log (&$$, simple_expression, 3, &$1, &$2, &$3), transfer_semantic (&$$, &$1); }	
 		  ;
 					
-term :	unary_expression { add_children_and_log (&$$, term, 1, &$1); }
-     |  term MULOP unary_expression  { add_children_and_log (&$$, term, 3, &$1, &$2, &$3); }	
+term :	unary_expression { add_children_and_log (&$$, term, 1, &$1), transfer_semantic (&$$, &$1); }
+     |  term MULOP unary_expression  { 
+			add_children_and_log (&$$, term, 3, &$1, &$2, &$3), transfer_semantic (&$$, &$1); 
+			if (!strcmp($2->getName(), "%") && $1->getSemanticType() != tINT || $3->getSemanticType() != tINT) 
+				fprintf (errorout, "Line# %d: Operands of modulus must be integers \n", $1->getStartLine());
+	 }	
      ;
 
-unary_expression : ADDOP unary_expression  { add_children_and_log (&$$, unary_expression, 2, &$1, &$2); }
-		 | NOT unary_expression { add_children_and_log (&$$, unary_expression, 2, &$1, &$2); }
-		 | factor { add_children_and_log (&$$, unary_expression, 1, &$1); }
+unary_expression : ADDOP unary_expression  { add_children_and_log (&$$, unary_expression, 2, &$1, &$2), transfer_semantic (&$$, &$2); }
+		 | NOT unary_expression { 
+			add_children_and_log (&$$, unary_expression, 2, &$1, &$2);
+			fprintf (errorout, "Line# %d: Not operator cannot be applied to non-integer\n", $1->getStartLine()); 
+			transfer_semantic (&$$, &$2);
+		 }
+		 | factor { add_children_and_log (&$$, unary_expression, 1, &$1), transfer_semantic (&$$, &$1); }
 		 ;
 	
-factor	: variable { add_children_and_log (&$$, factor, 1, &$1); }
-	| ID LPAREN argument_list RPAREN { add_children_and_log (&$$, factor, 4, &$1, &$2, &$3, &$4); }
-	| LPAREN expression RPAREN { add_children_and_log (&$$, factor, 3, &$1, &$2, &$3); }	
-	| CONST_INT  { add_children_and_log (&$$, factor, 1, &$1); }
-	| CONST_FLOAT { add_children_and_log (&$$, factor, 1, &$1); }
-	| variable INCOP { add_children_and_log (&$$, factor, 2, &$1, &$2); }
-	| variable DECOP { add_children_and_log (&$$, factor, 2, &$1, &$2); }
+factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semantic (&$$, &$1); }
+	| ID LPAREN argument_list RPAREN { 
+		add_children_and_log (&$$, factor, 4, &$1, &$2, &$3, &$4);
+		SymbolInfo* defined = st->lookUp($1->getName());
+		if (defined) {
+			if (defined->isFunction()) {
+				//$1->setSemanticType(defined->getSemanticType());
+				transfer_semantic (&$1, &defined);
+				ArrayList<SymbolInfo*> *dP = defined->getParams();
+				for (arg_list->moveToStart(), dP->moveToStart(); 
+					dP->currPos() < dP->length() && arg_list->currPos() < arg_list->length(); 
+					arg_list->next(), dP->next()) {
+						SymbolInfo *arg = arg_list->getValue(), *dParam = dP->getValue();
+						if (arg->getSemanticType() == tINT && dParam->getSemanticType() == tFLOAT) arg->setSemanticType(tFLOAT);
+						if (arg->getSemanticType() != dParam->getSemanticType() || arg->isArray() != dParam->isArray()) {
+							fprintf (errorout, "Line# %d: Type mismatch for argument %d of '%s'\n", 
+												arg->getStartLine(), arg_list->currPos()+1, $1->getName());
+						};
+				};
+				if (arg_list->length() > dP->length()) 
+					fprintf (errorout, "Line# %d: Too many arguments to function '%s'\n", $1->getStartLine(), $1->getName());
+				else if (arg_list->length() < dP->length()) 
+					fprintf (errorout, "Line# %d: Too few arguments to function '%s'\n", $1->getStartLine(), $1->getName());	
+				delete arg_list;
+			};
+		} else fprintf (errorout, "Line# %d: Undeclared function '%s'\n", $1->getStartLine(), $1->getName()); 
+		transfer_semantic (&$$, &$1); 
+	}
+	| LPAREN expression RPAREN { add_children_and_log (&$$, factor, 3, &$1, &$2, &$3), transfer_semantic (&$$, &$2); }	
+	| CONST_INT  { add_children_and_log (&$$, factor, 1, &$1), transfer_semantic (&$$, &$1); }
+	| CONST_FLOAT { add_children_and_log (&$$, factor, 1, &$1), transfer_semantic (&$$, &$1); }
+	| variable INCOP { add_children_and_log (&$$, factor, 2, &$1, &$2), transfer_semantic (&$$, &$1); }
+	| variable DECOP { add_children_and_log (&$$, factor, 2, &$1, &$2), transfer_semantic (&$$, &$1); }
 	;
 	
 argument_list : arguments { add_children_and_log (&$$, argument_list, 1, &$1); }
 			  ;
 	
-arguments : arguments COMMA logic_expression { add_children_and_log (&$$, arguments, 3, &$1, &$2, &$3); }	
-	      | logic_expression { add_children_and_log (&$$, arguments, 1, &$1); }
+arguments : arguments COMMA logic_expression { 
+				add_children_and_log (&$$, arguments, 3, &$1, &$2, &$3);
+				arg_list->append($3);
+		  }	
+	      | logic_expression { 
+				add_children_and_log (&$$, arguments, 1, &$1); 
+				arg_list = new ArrayList<SymbolInfo*>();
+				arg_list->append($1);
+				//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+		  }
 	      ;
  
 

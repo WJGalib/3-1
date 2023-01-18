@@ -7,15 +7,16 @@ using namespace std;
 class SymbolInfo {    
     char *name, *type, *semanticType;
     SymbolInfo *next;
-    ArrayList<SymbolInfo*> *children;
+    ArrayList<SymbolInfo*> *children, *params;
     bool isArrayType, isFunctionType;
     int arraySize, startLine, endLine;
 public:
     SymbolInfo (char* name, char* type) {
         this->name = name, this->type = type;
-        this->next = nullptr, this->children = nullptr;
+        this->next = nullptr, this->children = nullptr, this->params = nullptr;
         this->isArrayType = false, this->isFunctionType = false;
         this->arraySize = 0;
+
     };
     
     ~SymbolInfo() {
@@ -61,7 +62,13 @@ public:
     char* getSemanticType() {
         return this->semanticType;
     }
+    void setParams (ArrayList<SymbolInfo*> *params) {
+        this->params = params;
+    };
 
+    ArrayList<SymbolInfo*> *getParams() {
+        return this->params;
+    };
 
     void addChild (SymbolInfo* c) {
         if (!this->children) this->children = new ArrayList<SymbolInfo*>();

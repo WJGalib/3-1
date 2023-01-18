@@ -843,12 +843,29 @@ start : program 	<Line: 1-72>
                           ID : a	<Line: 63>
                  RPAREN : )	<Line: 63>
           SEMICOLON : ;	<Line: 63>
-       statement : PRINTLN LPAREN ID RPAREN SEMICOLON 	<Line: 68-68>
-        PRINTLN : printf	<Line: 68>
-        LPAREN : (	<Line: 68>
-        ID : h	<Line: 68>
-        RPAREN : )	<Line: 68>
-        SEMICOLON : ;	<Line: 68>
+       statement : expression_statement 	<Line: 68-68>
+        expression_statement : expression SEMICOLON 	<Line: 68-68>
+         expression : logic_expression 	<Line: 68-68>
+          logic_expression : rel_expression 	<Line: 68-68>
+           rel_expression : simple_expression 	<Line: 68-68>
+            simple_expression : term 	<Line: 68-68>
+             term : unary_expression 	<Line: 68-68>
+              unary_expression : factor 	<Line: 68-68>
+               factor : ID LPAREN argument_list RPAREN 	<Line: 68-68>
+                ID : printf	<Line: 68>
+                LPAREN : (	<Line: 68>
+                argument_list : arguments 	<Line: 68-68>
+                 arguments : logic_expression 	<Line: 68-68>
+                  logic_expression : rel_expression 	<Line: 68-68>
+                   rel_expression : simple_expression 	<Line: 68-68>
+                    simple_expression : term 	<Line: 68-68>
+                     term : unary_expression 	<Line: 68-68>
+                      unary_expression : factor 	<Line: 68-68>
+                       factor : variable 	<Line: 68-68>
+                        variable : ID 	<Line: 68-68>
+                         ID : h	<Line: 68>
+                RPAREN : )	<Line: 68>
+         SEMICOLON : ;	<Line: 68>
       statement : RETURN expression SEMICOLON 	<Line: 69-69>
        RETURN : return	<Line: 69>
        expression : logic_expression 	<Line: 69-69>

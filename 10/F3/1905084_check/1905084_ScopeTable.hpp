@@ -134,4 +134,8 @@ public:
             };
         };
     };
+
+    static void notifyRedundant() {
+        currId--;
+    };
 };

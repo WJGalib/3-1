@@ -45,7 +45,8 @@ public:
         curr = newScope;
     };
 
-    bool exitScope() {
+    bool exitScope(bool redundant = false) {
+        if (redundant) ScopeTable::notifyRedundant();
         cout << "exiting scope " << endl;
         ScopeTable* currParent = curr->getParent();
         if (currParent) {

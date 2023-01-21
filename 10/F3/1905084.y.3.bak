@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstdarg>
 #include "1905084_SymbolTable.hpp"
-#include "1905084_data.h"
 
 using namespace std;
 
@@ -16,7 +15,6 @@ int yylex(void);
 int line_count = 1, err_count = 0;
 extern FILE *yyin;
 bool function_scope = false;
-SymbolInfo* scope_function = nullptr;
 FILE *fp, *parseout, *errorout, *logout;
 
 SymbolTable* st;
@@ -27,9 +25,8 @@ char  *NON_TERMINAL, *tINT, *tFLOAT, *tVOID, *start, *program, *unit, *func_decl
 	  *variable, *expression, *logic_expression, *rel_expression, *simple_expression, *term, *unary_expression, *factor, 
 	  *argument_list, *arguments;
 
-void yyerror(char* s) {
-	fprintf(errorout, "Line# %d: Unrecognized syntax.\n", line_count);
-	fprintf(logout, "Line# %d: Unrecognized syntax.\n", line_count);
+void yyerror(char *s) {
+	//write your code
 };
 
 void fprint_rule (SymbolInfo* lhs, FILE* fp) {
@@ -63,9 +60,12 @@ void add_children_and_log (SymbolInfo** parent, char* name, int n, ... ) {
 };
 
 void transfer_semantic (SymbolInfo** parent, SymbolInfo** child) {
+	//cout << "hello" <<endl;
 	(*parent)->setSemanticType((*child)->getSemanticType());
 	if ((*child)->isArray()) (*parent)->setArray();
 	if ((*child)->isZero()) (*parent)->setZero();
+	//cout << line_count << ": settign semantic type of " << (*parent)->getName() << " as " << (*child)->getSemanticType() << endl; 
+	//fprintf(logout, "scp %d: setting semantic type of '%s' as %s\n", st->getCurrScopeId(), (*parent)->getName(), (*child)->getSemanticType());
 };
 
 void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
@@ -87,6 +87,14 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 	}
 };
 
+void print_error (const char* error) {
+	err_count++, fprintf (errorout, "Line# 20: %s", error); 
+}
+
+// void print_parse_tree (SymbolInfo** symbol, int depth = 1) {
+// 	print_parse_tree (*symbol, depth);
+// }
+
 %}
 
 %union {
@@ -94,6 +102,7 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 }
 
 %token <symbol> IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR VOID RETURN ADDOP MULOP INCOP DECOP LOGICOP RELOP ASSIGNOP BITOP NOT LPAREN RPAREN LCURL RCURL LSQUARE RSQUARE COMMA SEMICOLON CONST_INT CONST_FLOAT CONST_CHAR SINGLE_LINE_STRING MULTI_LINE_STRING ID PRINTLN
+
 %type <symbol> start program unit func_declaration func_definition parameter_list compound_statement var_declaration type_specifier declaration_list statements statement expression_statement variable expression logic_expression rel_expression simple_expression term unary_expression factor argument_list arguments 
 
 
@@ -119,13 +128,27 @@ unit : var_declaration  { add_children_and_log (&$$, unit, 1, &$1); }
      ;
      
 func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON { 
+			// for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
+			// 	SymbolInfo *param = param_list->getValue(), *lu = st->lookUpCurrentScope(param->getName());
+			// 	if (lu != nullptr) {
+			// 		err_count++, fprintf (errorout, "Line# %d: Redefinition of parameter '%s'\n", lu->getStartLine(), param->getName()); 
+			// 		break;
+			// 	};
+			// 	st->insert(param);
+			// };
 			transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insert($2);
+			//st->printAllScope(logout);
+			// st->exitScope(true);
+			// function_scope = false;
 			add_children_and_log (&$$, func_declaration, 6, &$1, &$2, &$3, &$4, &$5, &$6); 
 		}
 		| type_specifier ID LPAREN RPAREN SEMICOLON  { 
 			transfer_semantic (&$2, &$1), $2->setFunction();
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 			st->insert($2);
+			//st->printAllScope(logout);
 			add_children_and_log (&$$, func_declaration, 5, &$1, &$2, &$3, &$4, &$5); 
 		}
 		;
@@ -133,7 +156,7 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 			transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
 			st->insert($2);
-			st->enterScope(); function_scope = true, scope_function = $2;
+			st->enterScope(); function_scope = true;
 			if (param_list) {
 				for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
 					SymbolInfo* param = param_list->getValue();
@@ -142,6 +165,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 						break;
 					};
 					st->insert(param);
+					//fprintf(logout, "Inserted %s to scope %d!!!\n", param->getName(), st->getCurrScopeId());
 				};
 			};
 		} compound_statement { 
@@ -154,16 +178,26 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 					err_count++, fprintf (errorout, "Line# %d: '%s' redeclared as different kind of symbol\n", $2->getStartLine(), predefined->getName()); 				
 				};
 			};
+			// transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
+			//param_list = nullptr;
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			// st->printAllScope(logout);
+			// st->exitScope();
+			// function_scope = false;
+			//fprintf(logout, "Exiting function scope!!!\n");
 			add_children_and_log (&$$, func_definition, 6, &$1, &$2, &$3, &$4, &$5, &$7); 
-			scope_function = nullptr;
 		}
 		| type_specifier ID LPAREN RPAREN {	
 			transfer_semantic (&$2, &$1), $2->setFunction();
 			st->insert($2);
-			st->enterScope(); function_scope = true, scope_function = $2; 
+			st->enterScope(); function_scope = true; 
 		} compound_statement { 
-			add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$6);
-			scope_function = nullptr; 
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
+			// st->printAllScope(logout);
+			// st->exitScope();
+			// function_scope = false;
+			//fprintf(logout, "Exiting function scope!!!\n");
+			add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$6); 
 		}
  		;				
 
@@ -171,6 +205,7 @@ parameter_list  : parameter_list COMMA type_specifier ID  {
 			add_children_and_log (&$$, parameter_list, 4, &$1, &$2, &$3, &$4);
 			transfer_semantic (&$4, &$3);
 			param_list->append($4);
+			//cout << st->getCurrScopeId() << " " << $4->getName() << endl;
 		}
 		| parameter_list COMMA type_specifier { 
 			add_children_and_log (&$$, parameter_list, 3, &$1, &$2, &$3); 
@@ -181,6 +216,7 @@ parameter_list  : parameter_list COMMA type_specifier ID  {
 			param_list = new ArrayList<SymbolInfo*>();
 			transfer_semantic (&$2, &$1);
 			param_list->append($2);
+			//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 		}
 		| type_specifier { 
 			add_children_and_log (&$$, parameter_list, 1, &$1); 
@@ -194,6 +230,7 @@ compound_statement : LCURL {if (!function_scope) st->enterScope(); else function
 				add_children_and_log (&$$, compound_statement, 3, &$1, &$3, &$4); 
 				st->printAllScope(logout);
 				st->exitScope();
+				//function_scope = false;
 			}	
  		    | LCURL RCURL { 
 				add_children_and_log (&$$, compound_statement, 2, &$1, &$2); 
@@ -215,6 +252,7 @@ var_declaration : type_specifier declaration_list SEMICOLON {
 					if (predefined->getSemanticType() != $1->getSemanticType())
 						err_count++, fprintf (errorout, "Line# %d: Conflicting types for'%s'\n", var->getStartLine(), predefined->getName()); 						
 				};
+				//var->setSemanticType ($1->getSemanticType());
 				transfer_semantic (&var, &$1);
 				st->insert(var);
 			};
@@ -256,18 +294,12 @@ statements : statement { add_children_and_log (&$$, statements, 1, &$1); }
 statement : var_declaration { add_children_and_log (&$$, statement, 1, &$1); }
 	  | expression_statement { add_children_and_log (&$$, statement, 1, &$1); }
 	  | compound_statement { add_children_and_log (&$$, statement, 1, &$1); }
-	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement { 
-			add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); 
-	  }
+	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement { add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); }
 	  | IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | IF LPAREN expression RPAREN statement ELSE statement { add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); }
 	  | WHILE LPAREN expression RPAREN statement { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
-	  | RETURN expression SEMICOLON { 
-			add_children_and_log (&$$, statement, 3, &$1, &$2, &$3); 
-			if (scope_function->getSemanticType() == tVOID) 
-				err_count++, fprintf (errorout, "Line# %d: Return from void function\n", $1->getStartLine(), $1->getName()); 
-	  }
+	  | RETURN expression SEMICOLON { add_children_and_log (&$$, statement, 3, &$1, &$2, &$3); }
 	  ;
 	  
 expression_statement : SEMICOLON { add_children_and_log (&$$, expression_statement, 1, &$1); }
@@ -275,11 +307,15 @@ expression_statement : SEMICOLON { add_children_and_log (&$$, expression_stateme
 			;
 	  
 variable : ID { 
+		//fprintf(logout, "Checking if '%s' is in symbol table\n", $1->getName());
 		SymbolInfo* defined = st->lookUp($1->getName());
+		//st->printAllScope(logout);
 		add_children_and_log (&$$, variable, 1, &$1);
 		if (defined) {
-			if (!defined->isFunction()) transfer_semantic (&$1, &defined);
-			if (defined->isArray()) err_count++, fprintf (errorout, "Line# %d: '%s' is an array\n", $1->getStartLine(), $1->getName());
+			if (!defined->isFunction()) {
+				//$1->setSemanticType(defined->getSemanticType());
+				transfer_semantic (&$1, &defined);
+			};
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", $1->getStartLine(), $1->getName()); 
 		transfer_semantic (&$$, &$1); 
 	 }
@@ -287,7 +323,10 @@ variable : ID {
 		SymbolInfo* defined = st->lookUp($1->getName());
 		add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4);
 		if (defined) {
-			if (!defined->isFunction()) $1->setSemanticType(defined->getSemanticType());
+			if (!defined->isFunction()) {
+				$1->setSemanticType(defined->getSemanticType());
+				//transfer_semantic (&$1, &defined);
+			};
 			if (!defined->isArray()) err_count++, fprintf (errorout, "Line# %d: '%s' is not an array\n", $1->getStartLine(), $1->getName());
 			if ($3->getSemanticType() != tINT) err_count++, fprintf (errorout, "Line# %d: Array subscript is not an integer\n", $1->getStartLine());
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", $1->getStartLine(), $1->getName());
@@ -295,7 +334,11 @@ variable : ID {
 	 }
 	 ;
 	 
-expression : logic_expression { add_children_and_log (&$$, expression, 1, &$1), transfer_semantic (&$$, &$1); }
+expression : logic_expression { 
+			// if ($1->getSemanticType() == tVOID) 
+			// 	err_count++, fprintf (errorout, "Line# %d: Void cannot be used in expression\n", $1->getStartLine());
+			add_children_and_log (&$$, expression, 1, &$1), transfer_semantic (&$$, &$1);
+		}
 		| variable ASSIGNOP logic_expression { 
 			if ($3->getSemanticType() == tVOID) 
 				err_count++, fprintf (errorout, "Line# %d: Void cannot be used in expression \n", $1->getStartLine());
@@ -362,6 +405,7 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 		SymbolInfo* defined = st->lookUp($1->getName());
 		if (defined) {
 			if (defined->isFunction()) {
+				//$1->setSemanticType(defined->getSemanticType());
 				transfer_semantic (&$1, &defined);
 				ArrayList<SymbolInfo*> *dP = defined->getParams();
 				for (arg_list->moveToStart(), dP->moveToStart(); 
@@ -371,7 +415,7 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 						if (arg->getSemanticType() == tINT && dParam->getSemanticType() == tFLOAT) arg->setSemanticType(tFLOAT);
 						if (arg->getSemanticType() != dParam->getSemanticType() || arg->isArray() != dParam->isArray()) {
 							err_count++, fprintf (errorout, "Line# %d: Type mismatch for argument %d of '%s'\n", 
-												  arg->getStartLine(), arg_list->currPos()+1, $1->getName());
+												arg->getStartLine(), arg_list->currPos()+1, $1->getName());
 						};
 				};
 				if (arg_list->length() > dP->length()) 
@@ -379,7 +423,7 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 				else if (arg_list->length() < dP->length()) 
 					err_count++, fprintf (errorout, "Line# %d: Too few arguments to function '%s'\n", $1->getStartLine(), $1->getName());	
 				delete arg_list;
-			} else err_count++, fprintf (errorout, "Line# %d: '%s' is not a function\n", $1->getStartLine(), $1->getName()); 
+			};
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared function '%s'\n", $1->getStartLine(), $1->getName()); 
 		transfer_semantic (&$$, &$1); 
 	}
@@ -409,28 +453,57 @@ arguments : arguments COMMA logic_expression {
 				add_children_and_log (&$$, arguments, 1, &$1); 
 				arg_list = new ArrayList<SymbolInfo*>();
 				arg_list->append($1);
+				//cout << st->getCurrScopeId() << " " << $2->getName() << endl;
 		  }
 	      ;
+ 
 
 %%
-
 int main (int argc, char *argv[]) {
 	fp = fopen(argv[1],"r");
 	if (!fp) {
 		printf("Cannot Open Input File.\n");
 		exit(1);
 	};
-	parseout = fopen("parsetree.txt","w");
-	errorout = fopen("error.txt","w");
-	logout = fopen("log.txt","w");
-	init_strings();
+	parseout = fopen(argv[2],"w");
+	errorout = fopen(argv[3],"w");
+	logout = fopen(argv[4],"w");
+	
+	NON_TERMINAL = new char[20], strcpy (NON_TERMINAL, "NON_TERMINAL"); 
+	tINT = new char[10], strcpy (tINT, "INT"); 
+	tFLOAT = new char[10], strcpy (tFLOAT, "FLOAT"); 
+	tVOID = new char[10], strcpy (tVOID, "VOID"); 
+	start = new char[20], strcpy (start, "start"); 
+	program = new char[20], strcpy (program, "program"); 
+	unit = new char[20], strcpy (unit, "unit"); 
+	func_declaration = new char[20], strcpy (func_declaration, "func_declaration"); 
+	func_definition = new char[20], strcpy (func_definition, "func_definition"); 
+	parameter_list = new char[20], strcpy (parameter_list, "parameter_list"); 
+	compound_statement = new char[25], strcpy (compound_statement, "compound_statement"); 
+	var_declaration = new char[20], strcpy (var_declaration, "var_declaration"); 
+	type_specifier = new char[20], strcpy (type_specifier, "type_specifier"); 
+	declaration_list = new char[20], strcpy (declaration_list, "declaration_list"); 
+	statements = new char[20], strcpy (statements, "statements"); 
+	statement = new char[20], strcpy (statement, "statement"); 
+	expression_statement = new char[25], strcpy (expression_statement, "expression_statement"); 
+	variable = new char[20], strcpy (variable, "variable"); 
+	expression = new char[20], strcpy (expression, "expression"); 
+	logic_expression = new char[20], strcpy (logic_expression, "logic_expression"); 
+	rel_expression = new char[20], strcpy (rel_expression, "rel_expression"); 
+	simple_expression = new char[20], strcpy (simple_expression, "simple_expression"); 
+	term = new char[20], strcpy (term, "term"); 
+	unary_expression = new char[20], strcpy (unary_expression, "unary_expression"); 
+	factor = new char[20], strcpy (factor, "factor"); 
+	argument_list = new char[20], strcpy (argument_list, "argument_list"); 
+	arguments = new char[20], strcpy (arguments, "arguments"); 
+
 	yyin = fp;
 	st = new SymbolTable(11);
-
 	yyparse();
  	fprintf(logout, "Total Lines: %d\n", line_count);
  	fprintf(logout, "Total Errors: %d\n", err_count);
 	fclose(parseout), fclose(errorout), fclose(logout);
 	
 	return 0;
-};
+}
+

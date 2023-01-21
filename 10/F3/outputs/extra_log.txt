@@ -614,14 +614,8 @@ Line# 52: Token <CONST_INT> Lexeme 5 found
 factor : CONST_INT 
 unary_expression : factor 
 term : unary_expression 
-Line# 52: Token <ADDOP> Lexeme + found
-simple_expression : term 
-Line# 52: Token <CONST_INT> Lexeme 2 found
-factor : CONST_INT 
-unary_expression : factor 
-term : unary_expression 
 Line# 52: Token <SEMICOLON> Lexeme ; found
-simple_expression : simple_expression ADDOP term 
+simple_expression : term 
 rel_expression : simple_expression 
 logic_expression : rel_expression 
 expression : variable ASSIGNOP logic_expression 
@@ -641,11 +635,12 @@ logic_expression : rel_expression
 expression : logic_expression 
 variable : ID LSQUARE expression RSQUARE 
 Line# 53: Token <ASSIGNOP> Lexeme = found
-Line# 53: Token <CONST_INT> Lexeme 7 found
-factor : CONST_INT 
+Line# 53: Token <ID> Lexeme c found
+Line# 53: Token <SEMICOLON> Lexeme ; found
+variable : ID 
+factor : variable 
 unary_expression : factor 
 term : unary_expression 
-Line# 53: Token <SEMICOLON> Lexeme ; found
 simple_expression : term 
 rel_expression : simple_expression 
 logic_expression : rel_expression 
@@ -753,18 +748,8 @@ statements : statements statement
 Line# 57: Token <ID> Lexeme foo4 found
 Line# 57: Token <LPAREN> Lexeme ( found
 Line# 57: Token <ID> Lexeme c found
-Line# 57: Token <LSQUARE> Lexeme [ found
-Line# 57: Token <CONST_INT> Lexeme 1 found
-factor : CONST_INT 
-unary_expression : factor 
-term : unary_expression 
-Line# 57: Token <RSQUARE> Lexeme ] found
-simple_expression : term 
-rel_expression : simple_expression 
-logic_expression : rel_expression 
-expression : logic_expression 
-variable : ID LSQUARE expression RSQUARE 
 Line# 57: Token <RPAREN> Lexeme ) found
+variable : ID 
 factor : variable 
 unary_expression : factor 
 term : unary_expression 
@@ -980,5 +965,5 @@ func_definition : type_specifier ID LPAREN RPAREN compound_statement
 unit : func_definition 
 program : program unit 
 start : program 
-Total Lines: 73
-Total Errors: 25
+Total Lines: 72
+Total Errors: 28

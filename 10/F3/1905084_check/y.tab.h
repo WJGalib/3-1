@@ -54,14 +54,41 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    NEWLINE = 258,                 /* NEWLINE  */
-    NUMBER = 259,                  /* NUMBER  */
-    PLUS = 260,                    /* PLUS  */
-    MINUS = 261,                   /* MINUS  */
-    SLASH = 262,                   /* SLASH  */
-    ASTERISK = 263,                /* ASTERISK  */
-    LPAREN = 264,                  /* LPAREN  */
-    RPAREN = 265                   /* RPAREN  */
+    IF = 258,                      /* IF  */
+    ELSE = 259,                    /* ELSE  */
+    FOR = 260,                     /* FOR  */
+    WHILE = 261,                   /* WHILE  */
+    INT = 262,                     /* INT  */
+    FLOAT = 263,                   /* FLOAT  */
+    DOUBLE = 264,                  /* DOUBLE  */
+    CHAR = 265,                    /* CHAR  */
+    VOID = 266,                    /* VOID  */
+    RETURN = 267,                  /* RETURN  */
+    ADDOP = 268,                   /* ADDOP  */
+    MULOP = 269,                   /* MULOP  */
+    INCOP = 270,                   /* INCOP  */
+    DECOP = 271,                   /* DECOP  */
+    LOGICOP = 272,                 /* LOGICOP  */
+    RELOP = 273,                   /* RELOP  */
+    ASSIGNOP = 274,                /* ASSIGNOP  */
+    BITOP = 275,                   /* BITOP  */
+    NOT = 276,                     /* NOT  */
+    LPAREN = 277,                  /* LPAREN  */
+    RPAREN = 278,                  /* RPAREN  */
+    LCURL = 279,                   /* LCURL  */
+    RCURL = 280,                   /* RCURL  */
+    LSQUARE = 281,                 /* LSQUARE  */
+    RSQUARE = 282,                 /* RSQUARE  */
+    COMMA = 283,                   /* COMMA  */
+    SEMICOLON = 284,               /* SEMICOLON  */
+    CONST_INT = 285,               /* CONST_INT  */
+    CONST_FLOAT = 286,             /* CONST_FLOAT  */
+    CONST_CHAR = 287,              /* CONST_CHAR  */
+    SINGLE_LINE_STRING = 288,      /* SINGLE_LINE_STRING  */
+    MULTI_LINE_STRING = 289,       /* MULTI_LINE_STRING  */
+    ID = 290,                      /* ID  */
+    PRINTLN = 291,                 /* PRINTLN  */
+    LOWER_THAN_ELSE = 292          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -70,18 +97,54 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define NEWLINE 258
-#define NUMBER 259
-#define PLUS 260
-#define MINUS 261
-#define SLASH 262
-#define ASTERISK 263
-#define LPAREN 264
-#define RPAREN 265
+#define IF 258
+#define ELSE 259
+#define FOR 260
+#define WHILE 261
+#define INT 262
+#define FLOAT 263
+#define DOUBLE 264
+#define CHAR 265
+#define VOID 266
+#define RETURN 267
+#define ADDOP 268
+#define MULOP 269
+#define INCOP 270
+#define DECOP 271
+#define LOGICOP 272
+#define RELOP 273
+#define ASSIGNOP 274
+#define BITOP 275
+#define NOT 276
+#define LPAREN 277
+#define RPAREN 278
+#define LCURL 279
+#define RCURL 280
+#define LSQUARE 281
+#define RSQUARE 282
+#define COMMA 283
+#define SEMICOLON 284
+#define CONST_INT 285
+#define CONST_FLOAT 286
+#define CONST_CHAR 287
+#define SINGLE_LINE_STRING 288
+#define MULTI_LINE_STRING 289
+#define ID 290
+#define PRINTLN 291
+#define LOWER_THAN_ELSE 292
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 92 "1905084.y"
+
+	SymbolInfo* symbol;
+
+#line 145 "y.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

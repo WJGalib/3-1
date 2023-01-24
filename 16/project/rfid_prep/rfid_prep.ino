@@ -1,3 +1,8 @@
+/* 
+ * Project: Bluetooth Controlled Car
+ * https://www.youtube.com/channel/UCJFYG8rKSO-ZoM9awuwZU2A?view_as=subscriber
+ 
+ */
  
 //L293 Connection   
   const int motorA1      = 3;  
@@ -34,8 +39,6 @@ void setup() {
     pinMode(motorB1, OUTPUT);
     pinMode(motorB2, OUTPUT);
     pinMode(14, OUTPUT);
-    pinMode(17, OUTPUT);
-    digitalWrite(17, LOW);
     // Initialize serial communication at 9600 bits per second:
     Serial.begin(9600);
 
@@ -59,7 +62,7 @@ void loop() {
       state = Serial.read();   
     }
    //Serial.println(state); 
-   //digitalWrite(14, LOW);
+   digitalWrite(14, LOW);
 //  //Change speed if state is equal from 0 to 4. Values must be from 0 to 255 (PWM)
 //    if (state == '0'){
 //      vSpeed=0;}
@@ -229,7 +232,7 @@ void loop() {
      char msg_from_A[20];
   
     if ( radio.available()) {
-      //Serial.println("hello");
+      Serial.println("hello");
       // Variable for the received timestamp
       while (radio.available()) {                                   // While there is data ready
         radio.read( &msg_from_A, sizeof(msg_from_A) );             // Get the payload
@@ -262,7 +265,11 @@ void loop() {
     }
   
     // Dump debug info about the card; PICC_HaltA() is automatically called
-    digitalWrite(14, HIGH);
+    //digitalWrite(14, HIGH);
+    if (mfrc522.uid.uidByte[1] < 0x68) Serial.println("START");
+    else if (mfrc522.uid.uidByte[1] > 0xCB) Serial.println("MID");
+    else Serial.println("END");
+    
    
     
 }

@@ -1,4 +1,23 @@
- 
+#include <SPI.h>
+#include <MFRC522.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+#define CAR_ID 2
+
+#define RST_PIN         9          // Configurable, see typical pin layout above
+#define SS_PIN          10         // Configurable, see typical pin layout above
+#define VSPEED 255
+#define HALF_SPEED 127
+#define LOCKED 'L'
+#define FREE 'F'
+#define OVER 'O'
+#define READY 'R'
+#define GAME 'G'
+#define START_SEEN 'S'
+#define MID_SEEN 'M'
+#define END_SEEN 'E'
+
 //L293 Connection   
   const int motorA1      = 3;  
   const int motorA2      = 4; 
@@ -9,17 +28,12 @@
   
 
 //Useful Variables
-  int state;
-  int vSpeed=255;     // Default speed, from 0 to 255
-  int halfSpeed=127;
+  int signal, lap = 0;
 
-#include <SPI.h>
-#include <MFRC522.h>
-#include <nRF24L01.h>
-#include <RF24.h>
-
-#define RST_PIN         9          // Configurable, see typical pin layout above
-#define SS_PIN          10         // Configurable, see typical pin layout above
+  char gameState[5];
+  char carState = LOCKED;
+  char carStateStr[5] = "...";
+ 
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
@@ -34,8 +48,6 @@ void setup() {
     pinMode(motorB1, OUTPUT);
     pinMode(motorB2, OUTPUT);
     pinMode(14, OUTPUT);
-    pinMode(17, OUTPUT);
-    digitalWrite(17, LOW);
     // Initialize serial communication at 9600 bits per second:
     Serial.begin(9600);
 
@@ -56,25 +68,25 @@ void setup() {
 void loop() {
   
     if(Serial.available() > 0){     
-      state = Serial.read();   
+      signal = Serial.read();   
     }
-   //Serial.println(state); 
-   //digitalWrite(14, LOW);
-//  //Change speed if state is equal from 0 to 4. Values must be from 0 to 255 (PWM)
-//    if (state == '0'){
-//      vSpeed=0;}
-//    else if (state == '1'){
-//      vSpeed=100;}
-//    else if (state == '2'){
-//      vSpeed=180;}
-//    else if (state == '3'){
-//      vSpeed=200;}
-//    else if (state == '4'){
-//      vSpeed=255;}
+   //Serial.println(signal); 
+   digitalWrite(14, LOW);
+//  //Change speed if signal is equal from 0 to 4. Values must be from 0 to 255 (PWM)
+//    if (signal == '0'){
+//      VSPEED=0;}
+//    else if (signal == '1'){
+//      VSPEED=100;}
+//    else if (signal == '2'){
+//      VSPEED=180;}
+//    else if (signal == '3'){
+//      VSPEED=200;}
+//    else if (signal == '4'){
+//      VSPEED=255;}
 //     
   /***********************Forward****************************/
-  //If state is equal with letter 'F', car will go forward!
-    if (state == 'F') {
+  //If signal is equal with letter 'F', car will go forward!
+    if (signal == 'F') {
   digitalWrite (motorA1,LOW);
   //delay(1);
   digitalWrite(motorA2,HIGH);                       
@@ -84,12 +96,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB2,HIGH);
 
-  analogWrite (motorAspeed, vSpeed);
-  analogWrite (motorBspeed, vSpeed);
+  analogWrite (motorAspeed, VSPEED);
+  analogWrite (motorBspeed, VSPEED);
   }
   /**********************Forward Left************************/
-  //If state is equal with letter 'G', car will go forward left
-    else if (state == 'G') {
+  //If signal is equal with letter 'G', car will go forward left
+    else if (signal == 'G') {
 //  digitalWrite (motorA1,LOW);
 //  //delay(1);
 //  digitalWrite(motorA2,HIGH);                       
@@ -100,7 +112,7 @@ void loop() {
 //  digitalWrite(motorB2,HIGH);
 //
 //  analogWrite (motorAspeed, 0);
-//  analogWrite (motorBspeed, vSpeed);
+//  analogWrite (motorBspeed, VSPEED);
 
   digitalWrite (motorA2,LOW);
   //delay(1);
@@ -111,12 +123,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB1,LOW);
 
-  analogWrite (motorAspeed, halfSpeed);
-  analogWrite (motorBspeed, vSpeed); 
+  analogWrite (motorAspeed, HALF_SPEED);
+  analogWrite (motorBspeed, VSPEED); 
     }
   /**********************Forward Right************************/
-  //If state is equal with letter 'I', car will go forward right
-    else if (state == 'I') {
+  //If signal is equal with letter 'I', car will go forward right
+    else if (signal == 'I') {
 //  digitalWrite (motorA1,LOW);
 //  //delay(1);
 //  digitalWrite(motorA2,HIGH);                       
@@ -126,7 +138,7 @@ void loop() {
 //  //delay(1);
 //  digitalWrite(motorB2,HIGH);
 //
-//  analogWrite (motorAspeed, vSpeed);
+//  analogWrite (motorAspeed, VSPEED);
 //  analogWrite (motorBspeed, 0);
  
   digitalWrite (motorA2,HIGH);
@@ -138,12 +150,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB1,HIGH);
 
-  analogWrite (motorAspeed, vSpeed);
-  analogWrite (motorBspeed, halfSpeed);
+  analogWrite (motorAspeed, VSPEED);
+  analogWrite (motorBspeed, HALF_SPEED);
     }
   /***********************Backward****************************/
-  //If state is equal with letter 'B', car will go backward
-    else if (state == 'B') {
+  //If signal is equal with letter 'B', car will go backward
+    else if (signal == 'B') {
   digitalWrite (motorA1,HIGH);
   //delay(1);
   digitalWrite(motorA2,LOW);                       
@@ -153,12 +165,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB2,LOW);
 
-  analogWrite (motorAspeed, vSpeed);
-  analogWrite (motorBspeed, vSpeed);
+  analogWrite (motorAspeed, VSPEED);
+  analogWrite (motorBspeed, VSPEED);
     }
   /**********************Backward Left************************/
-  //If state is equal with letter 'H', car will go backward left
-    else if (state == 'H') {
+  //If signal is equal with letter 'H', car will go backward left
+    else if (signal == 'H') {
   digitalWrite (motorA1,HIGH);
   //delay(1);
   digitalWrite(motorA2,LOW);                       
@@ -169,11 +181,11 @@ void loop() {
   digitalWrite(motorB2,LOW);
 
   analogWrite (motorAspeed, 0);
-  analogWrite (motorBspeed, vSpeed);
+  analogWrite (motorBspeed, VSPEED);
     }
   /**********************Backward Right************************/
-  //If state is equal with letter 'J', car will go backward right
-    else if (state == 'J') {
+  //If signal is equal with letter 'J', car will go backward right
+    else if (signal == 'J') {
   digitalWrite (motorA1,HIGH);
   //delay(1);
   digitalWrite(motorA2,LOW);                       
@@ -183,12 +195,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB2,LOW);
 
-  analogWrite (motorAspeed, vSpeed);
+  analogWrite (motorAspeed, VSPEED);
   analogWrite (motorBspeed, 0);
     }
   /***************************Left*****************************/
-  //If state is equal with letter 'L', wheels will turn left
-    else if (state == 'L') {
+  //If signal is equal with letter 'L', wheels will turn left
+    else if (signal == 'L') {
   digitalWrite (motorA2,LOW);
   //delay(1);
   digitalWrite(motorA1,HIGH);                       
@@ -198,12 +210,12 @@ void loop() {
   //delay(1);
   digitalWrite(motorB1,LOW);
 
-  analogWrite (motorAspeed, vSpeed);
-  analogWrite (motorBspeed, vSpeed); 
+  analogWrite (motorAspeed, VSPEED);
+  analogWrite (motorBspeed, VSPEED); 
     }
   /***************************Right*****************************/
-  //If state is equal with letter 'R', wheels will turn right
-    else if (state == 'R') {
+  //If signal is equal with letter 'R', wheels will turn right
+    else if (signal == 'R') {
   
   digitalWrite (motorA2,HIGH);
   //delay(1);
@@ -214,37 +226,34 @@ void loop() {
   //delay(1);
   digitalWrite(motorB1,HIGH);
 
-  analogWrite (motorAspeed, vSpeed);
-  analogWrite (motorBspeed, vSpeed);
+  analogWrite (motorAspeed, VSPEED);
+  analogWrite (motorBspeed, VSPEED);
     }
 
      /************************Stop*****************************/
-  //If state is equal with letter 'S', stop the car
-    else if (state == 'S'){
+  //If signal is equal with letter 'S', stop the car
+    else if (signal == 'S'){
         analogWrite(motorA1, 0);  analogWrite(motorA2, 0); 
         analogWrite(motorB1, 0);  analogWrite(motorB2, 0);
     }
-
-
-     char msg_from_A[20];
   
     if ( radio.available()) {
-      //Serial.println("hello");
       // Variable for the received timestamp
       while (radio.available()) {                                   // While there is data ready
-        radio.read( &msg_from_A, sizeof(msg_from_A) );             // Get the payload
+        radio.read( &gameState, sizeof(gameState) );             // Get the payload
       }
   
       radio.stopListening();                                        // First, stop listening so we can talk
-  
-      char msg_to_A[20] = "Hello from node_B";
-      radio.write( &msg_to_A, sizeof(msg_to_A) );              // Send the final one back.
+      carStateStr[0] = CAR_ID;
+      carStateStr[1] = carState;
+      carStateStr[2] = lap;
+      radio.write( &carStateStr, sizeof(carStateStr) );              // Send the final one back.
       radio.startListening();                                       // Now, resume listening so we catch the next packets.
       
       Serial.print(F("Got message '"));
-      Serial.print(msg_from_A);
+      Serial.print(gameState);
       Serial.print(F("', Sent response '"));
-      Serial.print(msg_to_A);
+      Serial.print(carStateStr);
       Serial.println(F("'"));
     }
 

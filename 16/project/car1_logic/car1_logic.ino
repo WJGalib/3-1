@@ -3,7 +3,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define CAR_ID '0'
+#define CAR_ID '1'
 
 #define START 's'
 #define READY_STATE 'r'
@@ -38,7 +38,8 @@ const int motorBspeed = 6;
 
 
 //Useful Variables
-int signal = 0, timer_i = 0;
+int signal = 0, timer_i = 0, timer_j = 0;
+bool beep = false;
 
 char gameState[5] = "s";
 char carState = LOCKED, lap = '0';
@@ -207,6 +208,15 @@ void loop() {
   }
 
   //    delay(4);
+  if (beep) {
+    digitalWrite(14, HIGH);
+    if (timer_j < 60) timer_j++;
+    else {
+      digitalWrite(14, LOW);
+      timer_j = 0;
+      beep = false;
+    }
+  }
 
   if (gameState[0] == GAME_MODE && carState == READY) carState = GAME, lap = '0';
   else if (gameState[0] == FREE_MODE && carState == LOCKED) carState = FREE;
@@ -224,31 +234,30 @@ void loop() {
 
   if (!mfrc522.PICC_IsNewCardPresent()) {
     digitalWrite(2, LOW);
-    digitalWrite(14, LOW);
+    //if (carState == READY) carState = LOCKED;
     return;
   }
 
   // Select one of the cards
   if (!mfrc522.PICC_ReadCardSerial()) {
     digitalWrite(2, LOW);
-    digitalWrite(14, LOW);
+    if (carState == READY) carState = LOCKED;
     return;
   }
 
   // Dump debug info about the card; PICC_HaltA() is automatically called
   digitalWrite(2, HIGH);
-  if (digitalRead(14) == HIGH) digitalWrite(14. HIGH())
   if (gameState[0] == GAME_MODE || gameState[0] == READY_STATE) {
     if (ON_START_LINE) {
-      if (carState == GAME) carState = START_SEEN, digitalWrite(14, HIGH);
-      else if (carState == END_SEEN) carState = START_SEEN, digitalWrite(14, HIGH);
+      if (carState == GAME) carState = START_SEEN, beep = true;
+      else if (carState == END_SEEN) carState = START_SEEN, beep = true;
       else if (carState == LOCKED) carState = READY;
     } else if (ON_MID_LINE) {
       if (carState == START_SEEN) carState = MID_SEEN;
     } else /*ON_END_LINE*/ {
       if (carState == MID_SEEN) {
         carState = END_SEEN;
-        digitalWrite(14, HIGH);
+        beep = true;
         lap++;
       }
     }

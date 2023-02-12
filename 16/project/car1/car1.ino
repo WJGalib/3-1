@@ -24,7 +24,7 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 
-RF24 radio(15, 16); // CE, CSN
+RF24 radio(18, 19); // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
 
 void setup() {

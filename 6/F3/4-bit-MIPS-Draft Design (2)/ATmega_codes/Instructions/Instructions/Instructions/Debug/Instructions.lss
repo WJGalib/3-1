@@ -1,0 +1,129 @@
+
+Instructions.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000ac  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000200  00800060  000000ac  00000120  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  00000320  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000350  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000020  00000000  00000000  0000038c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000005c7  00000000  00000000  000003ac  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 0000053c  00000000  00000000  00000973  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000001f7  00000000  00000000  00000eaf  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000024  00000000  00000000  000010a8  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    00000334  00000000  00000000  000010cc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000013  00000000  00000000  00001400  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000010  00000000  00000000  00001413  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+   8:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+   c:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  10:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  14:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  18:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  1c:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  20:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  24:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  28:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  2c:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  30:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  34:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  38:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  3c:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  40:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  44:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  48:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  4c:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+  50:	0c 94 3f 00 	jmp	0x7e	; 0x7e <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+
+00000060 <__do_copy_data>:
+  60:	12 e0       	ldi	r17, 0x02	; 2
+  62:	a0 e6       	ldi	r26, 0x60	; 96
+  64:	b0 e0       	ldi	r27, 0x00	; 0
+  66:	ec ea       	ldi	r30, 0xAC	; 172
+  68:	f0 e0       	ldi	r31, 0x00	; 0
+  6a:	02 c0       	rjmp	.+4      	; 0x70 <__do_copy_data+0x10>
+  6c:	05 90       	lpm	r0, Z+
+  6e:	0d 92       	st	X+, r0
+  70:	a0 36       	cpi	r26, 0x60	; 96
+  72:	b1 07       	cpc	r27, r17
+  74:	d9 f7       	brne	.-10     	; 0x6c <__do_copy_data+0xc>
+  76:	0e 94 41 00 	call	0x82	; 0x82 <main>
+  7a:	0c 94 54 00 	jmp	0xa8	; 0xa8 <_exit>
+
+0000007e <__bad_interrupt>:
+  7e:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+00000082 <main>:
+0xe138};
+
+
+int main(void)
+{
+	MCUCSR = (1<<JTD);  MCUCSR = (1<<JTD);
+  82:	80 e8       	ldi	r24, 0x80	; 128
+  84:	84 bf       	out	0x34, r24	; 52
+  86:	84 bf       	out	0x34, r24	; 52
+
+	DDRA = 0b00000000;	// input pc
+  88:	1a ba       	out	0x1a, r1	; 26
+	PORTA = 0xFF;
+  8a:	8f ef       	ldi	r24, 0xFF	; 255
+  8c:	8b bb       	out	0x1b, r24	; 27
+
+	// Instruction : D[0-7]C[0-7]
+	DDRB = 0b11111111;	// lower 8-bits of instruction
+  8e:	87 bb       	out	0x17, r24	; 23
+	DDRC = 0b11111111;	// upper 8-bits of instruction
+  90:	84 bb       	out	0x14, r24	; 20
+
+	uint8_t pc = -1;
+	uint16_t instruction;
+	while (1)
+	{
+		pc = PINA;
+  92:	e9 b3       	in	r30, 0x19	; 25
+		instruction = INSTRUCTIONS[pc];
+  94:	f0 e0       	ldi	r31, 0x00	; 0
+  96:	ee 0f       	add	r30, r30
+  98:	ff 1f       	adc	r31, r31
+  9a:	e0 5a       	subi	r30, 0xA0	; 160
+  9c:	ff 4f       	sbci	r31, 0xFF	; 255
+  9e:	90 81       	ld	r25, Z
+  a0:	81 81       	ldd	r24, Z+1	; 0x01
+		PORTB = (uint8_t) instruction;
+  a2:	98 bb       	out	0x18, r25	; 24
+		PORTC = (uint8_t) (instruction >> 8);
+  a4:	85 bb       	out	0x15, r24	; 21
+  a6:	f5 cf       	rjmp	.-22     	; 0x92 <main+0x10>
+
+000000a8 <_exit>:
+  a8:	f8 94       	cli
+
+000000aa <__stop_program>:
+  aa:	ff cf       	rjmp	.-2      	; 0xaa <__stop_program>

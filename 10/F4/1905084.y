@@ -13,11 +13,11 @@ using namespace std;
 int yyparse(void);
 int yylex(void);
 
-int line_count = 1, err_count = 0;
+int line_count = 1, err_count = 0, stack_offset = 0, label_count = 0;
 extern FILE *yyin;
 bool function_scope = false;
 SymbolInfo* scope_function = nullptr;
-FILE *fp, *parseout, *errorout, *logout;
+FILE *fp, *parseout, *errorout, *logout, *asmout, *datasegout, *procsegout;
 
 SymbolTable* st;
 ArrayList<SymbolInfo*> *var_list = nullptr, *param_list = nullptr, *arg_list = nullptr;
@@ -64,8 +64,10 @@ void add_children_and_log (SymbolInfo** parent, char* name, int n, ... ) {
 
 void transfer_semantic (SymbolInfo** parent, SymbolInfo** child) {
 	(*parent)->setSemanticType((*child)->getSemanticType());
+	(*parent)->setStackOffset((*child)->getStackOffset());
 	if ((*child)->isArray()) (*parent)->setArray();
 	if ((*child)->isZero()) (*parent)->setZero();
+	if ((*child)->isGlobal()) (*parent)->setGlobal();
 };
 
 void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
@@ -80,6 +82,115 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 		for (children->moveToStart(); children->currPos() < children->length(); children->next()) {
 			SymbolInfo* x = children->getValue();
 			if (x) print_parse_tree (children->getValue(), depth + 1);
+		};
+	} else {
+		fprintf(parseout, "%s : %s", symbol->getType(), symbol->getName());
+		fprintf(parseout, "\t<Line: %d>\n", symbol->getStartLine());
+	};
+};
+
+void print_code (SymbolInfo* symbol, int depth = 0) {
+	if (!symbol) return;
+	//for (int i=0; i<depth; i++) fprintf(asmout, "\t");
+
+	if (symbol->getType() == NON_TERMINAL) {
+		// fprint_rule (symbol, parseout);
+		// fprintf(parseout, "\t<Line: %d-%d>\n", symbol->getStartLine(), symbol->getEndLine());
+		if (symbol->getName() == func_definition) {
+			SymbolInfo* comp_stat;
+			if (symbol->getChild(3)->getName() == parameter_list) comp_stat = symbol->getChild(5);
+			else comp_stat = symbol->getChild(4);
+
+			fprintf (asmout, "%s PROC\n", symbol->getChild(1)->getName());
+			if (!strcmp(symbol->getChild(1)->getName(), "main")) fprintf(asmout, "\tMOV AX, @DATA\n\tMOV DS, AX\n");
+			print_code (comp_stat, depth + 1);
+			fprintf (asmout, "%s ENDP\n", symbol->getChild(1)->getName());
+
+		} else if (symbol->getName() == compound_statement) {
+			if (symbol->getChild(1)->getName() == statements) {
+				print_code (symbol->getChild(1), depth);
+				fprintf (asmout, "\tADD SP, %d\n\tPOP BP\n", symbol->getVarDecCount() * 2);
+			};	
+		} else if (symbol->getName() == statements) {
+			print_code (symbol->getFirstChild(), depth);
+			if (symbol->getChildrenCount() > 1) print_code (symbol->getLastChild(), depth), cout << "2nd child " << endl;
+		} else if (symbol->getName() == statement) {
+			//fprintf(asmout, "STATEMENT! %d %d\n", symbol->getStartLine(), symbol->getEndLine());
+			if (symbol->getFirstChild()->getName() == var_declaration) {
+				fprintf(asmout, "\tPUSH BP\n\tMOV BP, SP\n\tSUB SP, %d\n", symbol->getFirstChild()->getVarDecCount() * 2);
+			} else if (symbol->getFirstChild()->getName() == expression_statement) {
+				label_count++, fprintf (asmout, "L%d:\n", label_count);
+				SymbolInfo* expr_stat = symbol->getFirstChild();
+				if (expr_stat->getFirstChild()->getName() == expression) print_code (expr_stat->getFirstChild());
+			} else if (!strcmp(symbol->getFirstChild()->getType(), "PRINTLN")) {
+				label_count++, fprintf (asmout, "L%d:\n", label_count);
+				SymbolInfo* var = symbol->getChild(2)->getFirstChild();
+				if (var->isGlobal()) {
+					fprintf (asmout, "\tMOV AX, %s\n", var->getName());
+				} else {
+					fprintf (asmout, "\tMOV AX, [BP-%d]\n", var->getStackOffset());
+				};
+				fprintf(asmout, "\tCALL print_output\n\tCALL new_line\n");
+			}
+		} else if (symbol->getName() == expression) {
+			//fprintf(asmout, "expression!!\n");
+			if (symbol->getFirstChild()->getName() == variable) {
+				print_code (symbol->getLastChild(), depth);
+				SymbolInfo* var = symbol->getFirstChild()->getFirstChild();
+				//fprintf(asmout, "assignment to %s\n", var->getName());
+				if (var->isGlobal()) {
+					fprintf (asmout, "\tMOV %s, AX\n", var->getName());
+				} else {
+					fprintf (asmout, "\tMOV [BP-%d], AX\n", var->getStackOffset());
+				}
+			} else print_code (symbol->getFirstChild(), depth);
+		} else if (symbol->getName() == logic_expression) {
+			if (symbol->getChildrenCount() > 1) {
+			} else print_code (symbol->getFirstChild(), depth);
+		} else if (symbol->getName() == rel_expression) {
+							cout << "hello!!" << endl;
+			if (symbol->getChildrenCount() > 1) {
+			} else print_code (symbol->getFirstChild(), depth);
+		} else if (symbol->getName() == simple_expression) {
+			if (symbol->getFirstChild()->getName() == term) print_code (symbol->getFirstChild(), depth);
+			else {
+
+			}
+		} else if (symbol->getName() == term) {
+			if (symbol->getFirstChild()->getName() == unary_expression) print_code (symbol->getFirstChild(), depth);
+			else {
+				
+			}
+		} else if (symbol->getName() == unary_expression) {
+			if (symbol->getFirstChild()->getName() == factor) print_code (symbol->getFirstChild(), depth);
+			else {
+				
+			}
+		} else if (symbol->getName() == factor) {
+			if (!strcmp(symbol->getFirstChild()->getType(), "CONST_INT")) {
+				fprintf (asmout, "\tMOV AX, %s\n", symbol->getFirstChild()->getName());
+			} else if (symbol->getFirstChild()->getName() == variable) {
+				fprintf (asmout, "\tMOV AX, %s\n", symbol->getFirstChild()->getFirstChild()->getName());
+			} else if (symbol->getChild(1)->getName() == expression) {
+				print_code (symbol->getChild(1), depth);
+			} else if (!strcmp(symbol->getChild(1)->getType(), "INCOP")) {
+				SymbolInfo* var = symbol->getChild(1)->getFirstChild();
+				if (var->isGlobal()) fprintf (asmout, "INC %s\n", var->getName());
+				else fprintf (asmout, "INC [BP-%d]\n", var->getStackOffset());
+			} else if (!strcmp(symbol->getChild(1)->getType(), "DECOP")) {
+				SymbolInfo* var = symbol->getChild(1)->getFirstChild();
+				if (var->isGlobal()) fprintf (asmout, "DEC %s\n", var->getName());
+				else fprintf (asmout, "DEC [BP-%d]\n", var->getStackOffset());
+			} 
+
+		} else {
+			ArrayList<SymbolInfo*> *children = symbol->getChildren();
+			if (!children) return;
+			for (children->moveToStart(); children->currPos() < children->length(); children->next()) {
+				SymbolInfo* x = children->getValue();
+				if (!x) continue;
+				print_code (x, depth);
+			};
 		};
 	} else {
 		fprintf(parseout, "%s : %s", symbol->getType(), symbol->getName());
@@ -106,6 +217,23 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 start : program {
 		add_children_and_log (&$$, start, 1, &$1);
 		print_parse_tree ($$);
+		fprintf(asmout, ".CODE\n");
+		print_code ($$);
+
+		SymbolInfo *start_node = $1, *curr_node = nullptr;
+		curr_node = start_node;
+
+		fprintf(datasegout, ".MODEL SMALL\n");
+		fprintf(datasegout, ".STACK 1000H\n");
+		fprintf(datasegout, ".DATA 1000H\n");
+		fprintf(datasegout, "\tCR EQU 0DH\n\tLF EQU 0AH\n\tnumber DB \"00000$\"\n");
+
+		ArrayList<SymbolInfo*> *children = curr_node->getChildren();
+		// for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
+
+		// }
+		
+
 	}
 	;
 
@@ -192,6 +320,7 @@ parameter_list  : parameter_list COMMA type_specifier ID  {
  		
 compound_statement : LCURL {if (!function_scope) st->enterScope(); else function_scope = false;} statements RCURL  { 
 				add_children_and_log (&$$, compound_statement, 3, &$1, &$3, &$4); 
+				$$->setVarDecCount(st->getCurrScopeVarCount());
 				st->printAllScope(logout);
 				st->exitScope();
 			}	
@@ -204,6 +333,7 @@ compound_statement : LCURL {if (!function_scope) st->enterScope(); else function
  		    
 var_declaration : type_specifier declaration_list SEMICOLON {
 			add_children_and_log (&$$, var_declaration, 3, &$1, &$2, &$3);
+			bool global_dec = st->getCurrScopeId() == 1? true : false;
 			for (var_list->moveToStart(); var_list->currPos() < var_list->length(); var_list->next()) {
 				SymbolInfo* var = var_list->getValue();
 				if ($1->getSemanticType() == tVOID) {
@@ -216,8 +346,17 @@ var_declaration : type_specifier declaration_list SEMICOLON {
 						err_count++, fprintf (errorout, "Line# %d: Conflicting types for'%s'\n", var->getStartLine(), predefined->getName()); 						
 				};
 				transfer_semantic (&var, &$1);
+				if (global_dec) {
+					var->setGlobal();
+					fprintf(datasegout, "\t%s DW 1 DUP (0000H)\n", var->getName());
+				} else {
+					stack_offset += 2;
+					var->setStackOffset(stack_offset);
+				};
 				st->insert(var);
 			};
+			$$->setVarDecCount(var_list->length());
+			st->setCurrScopeVarCount(st->getCurrScopeVarCount() + $$->getVarDecCount());
 			delete var_list;
 		 }
  		 ;
@@ -262,7 +401,7 @@ statement : var_declaration { add_children_and_log (&$$, statement, 1, &$1); }
 	  | IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | IF LPAREN expression RPAREN statement ELSE statement { add_children_and_log (&$$, statement, 7, &$1, &$2, &$3, &$4, &$5, &$6, &$7); }
 	  | WHILE LPAREN expression RPAREN statement { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
-	  | PRINTLN LPAREN ID RPAREN SEMICOLON { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
+	  | PRINTLN LPAREN variable RPAREN SEMICOLON { add_children_and_log (&$$, statement, 5, &$1, &$2, &$3, &$4, &$5); }
 	  | RETURN expression SEMICOLON { 
 			add_children_and_log (&$$, statement, 3, &$1, &$2, &$3); 
 			if (scope_function->getSemanticType() == tVOID) 
@@ -364,6 +503,7 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 			if (defined->isFunction()) {
 				transfer_semantic (&$1, &defined);
 				if (arg_list && arg_list->length() > 0) {
+					cout << "hello ! kuttarbaccha " << $1->getName() << endl;
 					ArrayList<SymbolInfo*> *dP = defined->getParams();
 					for (arg_list->moveToStart(), dP->moveToStart(); 
 						dP->currPos() < dP->length() && arg_list->currPos() < arg_list->length(); 
@@ -427,6 +567,9 @@ int main (int argc, char *argv[]) {
 	parseout = fopen("parsetree.txt","w");
 	errorout = fopen("error.txt","w");
 	logout = fopen("log.txt","w");
+	if (argc > 2) asmout = fopen(argv[2], "w");
+	else asmout = fopen("output.asm", "w");
+	datasegout = fopen(".data_seg.asm", "w");
 	init_strings();
 	yyin = fp;
 	st = new SymbolTable(11);

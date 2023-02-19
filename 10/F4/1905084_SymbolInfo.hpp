@@ -9,14 +9,14 @@ class SymbolInfo {
     SymbolInfo *next;
     ArrayList<SymbolInfo*> *children, *params;
     bool isArrayType, isFunctionType, hasZeroValue, isGlobalVar;
-    int arraySize, startLine, endLine, stackOffset, varDecCount;
+    int arraySize, startLine, endLine, stackOffset, varDecCount, nextLabel, trueLabel, falseLabel;
 public:
     SymbolInfo (char* name, char* type) {
         this->name = name, this->type = type;
         this->next = nullptr, this->children = nullptr, this->params = nullptr;
         this->isArrayType = false, this->isFunctionType = false, this->hasZeroValue = false, this->isGlobalVar = false;
         this->arraySize = 0, this->varDecCount = 0;
-
+        this->nextLabel = 0; this->trueLabel = 0; this->falseLabel = 0;
     };
     
     ~SymbolInfo() {
@@ -79,7 +79,25 @@ public:
     };
     int getVarDecCount() {
         return this->varDecCount;
-    }
+    };
+    void setNextLabel (int label) {
+        this->nextLabel = label;
+    };
+    int getNextLabel() {
+        return this->nextLabel;
+    };
+    void setTrueLabel (int label) {
+        this->trueLabel = label;
+    };
+    int getTrueLabel() {
+        return this->trueLabel;
+    };
+    void setFalseLabel (int label) {
+        this->falseLabel = label;
+    };
+    int getFalseLabel() {
+        return this->falseLabel;
+    };
 
     void addChild (SymbolInfo* c) {
         if (!this->children) this->children = new ArrayList<SymbolInfo*>();

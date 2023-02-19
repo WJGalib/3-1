@@ -3,7 +3,7 @@ input1=$1
 
 yacc -d -Wcounterexamples -Wother -Wconflicts-sr 1905084.y
 echo 'Generated the parser C file as well the header file'
-g++ -w -c -o y.o y.tab.c
+g++ -w -g -c -o y.o y.tab.c
 echo 'Generated the parser object file'
 flex 1905084.l
 echo 'Generated the scanner C file'

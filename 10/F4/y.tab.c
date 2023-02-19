@@ -69,14 +69,8 @@
 /* First part of user prologue.  */
 #line 1 "1905084.y"
 
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <cassert>
-#include <cstdarg>
-#include "1905084_SymbolTable.hpp"
-#include "1905084_data.h"
+
+#include "1905084_code_generator.h"
 
 using namespace std;
 
@@ -87,7 +81,7 @@ int line_count = 1, err_count = 0, stack_offset = 0, label_count = 0;
 extern FILE *yyin;
 bool function_scope = false;
 SymbolInfo* scope_function = nullptr;
-FILE *fp, *parseout, *errorout, *logout, *asmout, *datasegout, *procsegout;
+FILE *fp, *parseout, *errorout, *logout, *asmout, *procsegout;
 
 SymbolTable* st;
 ArrayList<SymbolInfo*> *var_list = nullptr, *param_list = nullptr, *arg_list = nullptr;
@@ -111,7 +105,7 @@ void fprint_rule (SymbolInfo* lhs, FILE* fp) {
 		if (x->getType() == NON_TERMINAL) fprintf(fp, "%s ", x->getName());
 		else fprintf(fp, "%s ", x->getType());
 	};
-}
+};
 
 void log_rule (SymbolInfo* lhs) {
 	fprint_rule (lhs, logout);
@@ -159,117 +153,8 @@ void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
 	};
 };
 
-void print_code (SymbolInfo* symbol, int depth = 0) {
-	if (!symbol) return;
-	//for (int i=0; i<depth; i++) fprintf(asmout, "\t");
 
-	if (symbol->getType() == NON_TERMINAL) {
-		// fprint_rule (symbol, parseout);
-		// fprintf(parseout, "\t<Line: %d-%d>\n", symbol->getStartLine(), symbol->getEndLine());
-		if (symbol->getName() == func_definition) {
-			SymbolInfo* comp_stat;
-			if (symbol->getChild(3)->getName() == parameter_list) comp_stat = symbol->getChild(5);
-			else comp_stat = symbol->getChild(4);
-
-			fprintf (asmout, "%s PROC\n", symbol->getChild(1)->getName());
-			if (!strcmp(symbol->getChild(1)->getName(), "main")) fprintf(asmout, "\tMOV AX, @DATA\n\tMOV DS, AX\n");
-			print_code (comp_stat, depth + 1);
-			fprintf (asmout, "%s ENDP\n", symbol->getChild(1)->getName());
-
-		} else if (symbol->getName() == compound_statement) {
-			if (symbol->getChild(1)->getName() == statements) {
-				print_code (symbol->getChild(1), depth);
-				fprintf (asmout, "\tADD SP, %d\n\tPOP BP\n", symbol->getVarDecCount() * 2);
-			};	
-		} else if (symbol->getName() == statements) {
-			print_code (symbol->getFirstChild(), depth);
-			if (symbol->getChildrenCount() > 1) print_code (symbol->getLastChild(), depth), cout << "2nd child " << endl;
-		} else if (symbol->getName() == statement) {
-			//fprintf(asmout, "STATEMENT! %d %d\n", symbol->getStartLine(), symbol->getEndLine());
-			if (symbol->getFirstChild()->getName() == var_declaration) {
-				fprintf(asmout, "\tPUSH BP\n\tMOV BP, SP\n\tSUB SP, %d\n", symbol->getFirstChild()->getVarDecCount() * 2);
-			} else if (symbol->getFirstChild()->getName() == expression_statement) {
-				label_count++, fprintf (asmout, "L%d:\n", label_count);
-				SymbolInfo* expr_stat = symbol->getFirstChild();
-				if (expr_stat->getFirstChild()->getName() == expression) print_code (expr_stat->getFirstChild());
-			} else if (!strcmp(symbol->getFirstChild()->getType(), "PRINTLN")) {
-				label_count++, fprintf (asmout, "L%d:\n", label_count);
-				SymbolInfo* var = symbol->getChild(2)->getFirstChild();
-				if (var->isGlobal()) {
-					fprintf (asmout, "\tMOV AX, %s\n", var->getName());
-				} else {
-					fprintf (asmout, "\tMOV AX, [BP-%d]\n", var->getStackOffset());
-				};
-				fprintf(asmout, "\tCALL print_output\n\tCALL new_line\n");
-			}
-		} else if (symbol->getName() == expression) {
-			//fprintf(asmout, "expression!!\n");
-			if (symbol->getFirstChild()->getName() == variable) {
-				print_code (symbol->getLastChild(), depth);
-				SymbolInfo* var = symbol->getFirstChild()->getFirstChild();
-				//fprintf(asmout, "assignment to %s\n", var->getName());
-				if (var->isGlobal()) {
-					fprintf (asmout, "\tMOV %s, AX\n", var->getName());
-				} else {
-					fprintf (asmout, "\tMOV [BP-%d], AX\n", var->getStackOffset());
-				}
-			} else print_code (symbol->getFirstChild(), depth);
-		} else if (symbol->getName() == logic_expression) {
-			if (symbol->getChildrenCount() > 1) {
-			} else print_code (symbol->getFirstChild(), depth);
-		} else if (symbol->getName() == rel_expression) {
-							cout << "hello!!" << endl;
-			if (symbol->getChildrenCount() > 1) {
-			} else print_code (symbol->getFirstChild(), depth);
-		} else if (symbol->getName() == simple_expression) {
-			if (symbol->getFirstChild()->getName() == term) print_code (symbol->getFirstChild(), depth);
-			else {
-
-			}
-		} else if (symbol->getName() == term) {
-			if (symbol->getFirstChild()->getName() == unary_expression) print_code (symbol->getFirstChild(), depth);
-			else {
-				
-			}
-		} else if (symbol->getName() == unary_expression) {
-			if (symbol->getFirstChild()->getName() == factor) print_code (symbol->getFirstChild(), depth);
-			else {
-				
-			}
-		} else if (symbol->getName() == factor) {
-			if (!strcmp(symbol->getFirstChild()->getType(), "CONST_INT")) {
-				fprintf (asmout, "\tMOV AX, %s\n", symbol->getFirstChild()->getName());
-			} else if (symbol->getFirstChild()->getName() == variable) {
-				fprintf (asmout, "\tMOV AX, %s\n", symbol->getFirstChild()->getFirstChild()->getName());
-			} else if (symbol->getChild(1)->getName() == expression) {
-				print_code (symbol->getChild(1), depth);
-			} else if (!strcmp(symbol->getChild(1)->getType(), "INCOP")) {
-				SymbolInfo* var = symbol->getChild(1)->getFirstChild();
-				if (var->isGlobal()) fprintf (asmout, "INC %s\n", var->getName());
-				else fprintf (asmout, "INC [BP-%d]\n", var->getStackOffset());
-			} else if (!strcmp(symbol->getChild(1)->getType(), "DECOP")) {
-				SymbolInfo* var = symbol->getChild(1)->getFirstChild();
-				if (var->isGlobal()) fprintf (asmout, "DEC %s\n", var->getName());
-				else fprintf (asmout, "DEC [BP-%d]\n", var->getStackOffset());
-			} 
-
-		} else {
-			ArrayList<SymbolInfo*> *children = symbol->getChildren();
-			if (!children) return;
-			for (children->moveToStart(); children->currPos() < children->length(); children->next()) {
-				SymbolInfo* x = children->getValue();
-				if (!x) continue;
-				print_code (x, depth);
-			};
-		};
-	} else {
-		fprintf(parseout, "%s : %s", symbol->getType(), symbol->getName());
-		fprintf(parseout, "\t<Line: %d>\n", symbol->getStartLine());
-	}
-};
-
-
-#line 273 "y.tab.c"
+#line 158 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -396,11 +281,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 203 "1905084.y"
+#line 88 "1905084.y"
 
 	SymbolInfo* symbol;
 
-#line 404 "y.tab.c"
+#line 289 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -874,13 +759,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   217,   217,   240,   241,   244,   245,   246,   249,   254,
-     261,   261,   288,   288,   298,   303,   307,   313,   321,   321,
-     327,   334,   364,   365,   366,   369,   373,   378,   383,   391,
-     392,   395,   396,   397,   398,   401,   402,   403,   404,   405,
-     412,   413,   416,   425,   437,   438,   447,   448,   457,   458,
-     465,   466,   473,   474,   488,   489,   495,   498,   499,   529,
-     530,   535,   540,   541,   544,   545,   548,   552
+       0,   102,   102,   119,   120,   123,   124,   125,   128,   133,
+     140,   140,   167,   167,   177,   182,   186,   192,   200,   200,
+     206,   213,   243,   244,   245,   248,   252,   257,   262,   270,
+     271,   274,   275,   276,   277,   280,   281,   282,   283,   284,
+     291,   292,   295,   304,   316,   317,   326,   327,   336,   337,
+     344,   345,   352,   353,   367,   368,   374,   377,   378,   408,
+     409,   414,   419,   420,   423,   424,   427,   431
 };
 #endif
 
@@ -1528,83 +1413,77 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: program  */
-#line 217 "1905084.y"
+#line 102 "1905084.y"
                 {
 		add_children_and_log (&(yyval.symbol), start, 1, &(yyvsp[0].symbol));
 		print_parse_tree ((yyval.symbol));
 		fprintf(asmout, ".CODE\n");
-		print_code ((yyval.symbol));
+		fprint_code ((yyval.symbol));
 
-		SymbolInfo *start_node = (yyvsp[0].symbol), *curr_node = nullptr;
-		curr_node = start_node;
-
-		fprintf(datasegout, ".MODEL SMALL\n");
-		fprintf(datasegout, ".STACK 1000H\n");
-		fprintf(datasegout, ".DATA 1000H\n");
-		fprintf(datasegout, "\tCR EQU 0DH\n\tLF EQU 0AH\n\tnumber DB \"00000$\"\n");
-
-		ArrayList<SymbolInfo*> *children = curr_node->getChildren();
+		// SymbolInfo *start_node = $1, *curr_node = nullptr;
+		// curr_node = start_node;
+		// ArrayList<SymbolInfo*> *children = curr_node->getChildren();
 		// for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
 
 		// }
 		
 
 	}
-#line 1554 "y.tab.c"
+#line 1433 "y.tab.c"
     break;
 
   case 3: /* program: program unit  */
-#line 240 "1905084.y"
+#line 119 "1905084.y"
                        { add_children_and_log (&(yyval.symbol), program, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1560 "y.tab.c"
+#line 1439 "y.tab.c"
     break;
 
   case 4: /* program: unit  */
-#line 241 "1905084.y"
+#line 120 "1905084.y"
                { add_children_and_log (&(yyval.symbol), program, 1, &(yyvsp[0].symbol)); }
-#line 1566 "y.tab.c"
+#line 1445 "y.tab.c"
     break;
 
   case 5: /* unit: var_declaration  */
-#line 244 "1905084.y"
+#line 123 "1905084.y"
                         { add_children_and_log (&(yyval.symbol), unit, 1, &(yyvsp[0].symbol)); }
-#line 1572 "y.tab.c"
+#line 1451 "y.tab.c"
     break;
 
   case 6: /* unit: func_declaration  */
-#line 245 "1905084.y"
+#line 124 "1905084.y"
                          { add_children_and_log (&(yyval.symbol), unit, 1, &(yyvsp[0].symbol)); }
-#line 1578 "y.tab.c"
+#line 1457 "y.tab.c"
     break;
 
   case 7: /* unit: func_definition  */
-#line 246 "1905084.y"
+#line 125 "1905084.y"
                         { add_children_and_log (&(yyval.symbol), unit, 1, &(yyvsp[0].symbol)); }
-#line 1584 "y.tab.c"
+#line 1463 "y.tab.c"
     break;
 
   case 8: /* func_declaration: type_specifier ID LPAREN parameter_list RPAREN SEMICOLON  */
-#line 249 "1905084.y"
+#line 128 "1905084.y"
                                                                             { 
 			transfer_semantic (&(yyvsp[-4].symbol), &(yyvsp[-5].symbol)), (yyvsp[-4].symbol)->setFunction(), (yyvsp[-4].symbol)->setParams (param_list);
 			st->insert((yyvsp[-4].symbol));
 			add_children_and_log (&(yyval.symbol), func_declaration, 6, &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 		}
-#line 1594 "y.tab.c"
+#line 1473 "y.tab.c"
     break;
 
   case 9: /* func_declaration: type_specifier ID LPAREN RPAREN SEMICOLON  */
-#line 254 "1905084.y"
+#line 133 "1905084.y"
                                                              { 
 			transfer_semantic (&(yyvsp[-3].symbol), &(yyvsp[-4].symbol)), (yyvsp[-3].symbol)->setFunction();
 			st->insert((yyvsp[-3].symbol));
 			add_children_and_log (&(yyval.symbol), func_declaration, 5, &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 		}
-#line 1604 "y.tab.c"
+#line 1483 "y.tab.c"
     break;
 
   case 10: /* $@1: %empty  */
-#line 261 "1905084.y"
+#line 140 "1905084.y"
                                                                  {
 			transfer_semantic (&(yyvsp[-3].symbol), &(yyvsp[-4].symbol)), (yyvsp[-3].symbol)->setFunction(), (yyvsp[-3].symbol)->setParams (param_list);
 			st->insert((yyvsp[-3].symbol));
@@ -1620,11 +1499,11 @@ yyreduce:
 				};
 			};
 		}
-#line 1624 "y.tab.c"
+#line 1503 "y.tab.c"
     break;
 
   case 11: /* func_definition: type_specifier ID LPAREN parameter_list RPAREN $@1 compound_statement  */
-#line 275 "1905084.y"
+#line 154 "1905084.y"
                                      { 
 			SymbolInfo* predefined = st->lookUp((yyvsp[-5].symbol)->getName());
 			if (predefined) {
@@ -1638,97 +1517,97 @@ yyreduce:
 			add_children_and_log (&(yyval.symbol), func_definition, 6, &(yyvsp[-6].symbol), &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[0].symbol)); 
 			scope_function = nullptr;
 		}
-#line 1642 "y.tab.c"
+#line 1521 "y.tab.c"
     break;
 
   case 12: /* $@2: %empty  */
-#line 288 "1905084.y"
+#line 167 "1905084.y"
                                                   {	
 			transfer_semantic (&(yyvsp[-2].symbol), &(yyvsp[-3].symbol)), (yyvsp[-2].symbol)->setFunction();
 			st->insert((yyvsp[-2].symbol));
 			st->enterScope(); function_scope = true, scope_function = (yyvsp[-2].symbol); 
 		}
-#line 1652 "y.tab.c"
+#line 1531 "y.tab.c"
     break;
 
   case 13: /* func_definition: type_specifier ID LPAREN RPAREN $@2 compound_statement  */
-#line 292 "1905084.y"
+#line 171 "1905084.y"
                                      { 
 			add_children_and_log (&(yyval.symbol), func_definition, 5, &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[0].symbol));
 			scope_function = nullptr; 
 		}
-#line 1661 "y.tab.c"
+#line 1540 "y.tab.c"
     break;
 
   case 14: /* parameter_list: parameter_list COMMA type_specifier ID  */
-#line 298 "1905084.y"
+#line 177 "1905084.y"
                                                           { 
 			add_children_and_log (&(yyval.symbol), parameter_list, 4, &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			transfer_semantic (&(yyvsp[0].symbol), &(yyvsp[-1].symbol));
 			param_list->append((yyvsp[0].symbol));
 		}
-#line 1671 "y.tab.c"
+#line 1550 "y.tab.c"
     break;
 
   case 15: /* parameter_list: parameter_list COMMA type_specifier  */
-#line 303 "1905084.y"
+#line 182 "1905084.y"
                                                       { 
 			add_children_and_log (&(yyval.symbol), parameter_list, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 			param_list->append((yyvsp[0].symbol));
 		}
-#line 1680 "y.tab.c"
+#line 1559 "y.tab.c"
     break;
 
   case 16: /* parameter_list: type_specifier ID  */
-#line 307 "1905084.y"
+#line 186 "1905084.y"
                                     { 
 			add_children_and_log (&(yyval.symbol), parameter_list, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 			param_list = new ArrayList<SymbolInfo*>();
 			transfer_semantic (&(yyvsp[0].symbol), &(yyvsp[-1].symbol));
 			param_list->append((yyvsp[0].symbol));
 		}
-#line 1691 "y.tab.c"
+#line 1570 "y.tab.c"
     break;
 
   case 17: /* parameter_list: type_specifier  */
-#line 313 "1905084.y"
+#line 192 "1905084.y"
                                  { 
 			add_children_and_log (&(yyval.symbol), parameter_list, 1, &(yyvsp[0].symbol)); 
 			param_list = new ArrayList<SymbolInfo*>();
 			param_list->append((yyvsp[0].symbol));
 		}
-#line 1701 "y.tab.c"
+#line 1580 "y.tab.c"
     break;
 
   case 18: /* $@3: %empty  */
-#line 321 "1905084.y"
+#line 200 "1905084.y"
                            {if (!function_scope) st->enterScope(); else function_scope = false;}
-#line 1707 "y.tab.c"
+#line 1586 "y.tab.c"
     break;
 
   case 19: /* compound_statement: LCURL $@3 statements RCURL  */
-#line 321 "1905084.y"
+#line 200 "1905084.y"
                                                                                                                    { 
 				add_children_and_log (&(yyval.symbol), compound_statement, 3, &(yyvsp[-3].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 				(yyval.symbol)->setVarDecCount(st->getCurrScopeVarCount());
 				st->printAllScope(logout);
 				st->exitScope();
 			}
-#line 1718 "y.tab.c"
+#line 1597 "y.tab.c"
     break;
 
   case 20: /* compound_statement: LCURL RCURL  */
-#line 327 "1905084.y"
+#line 206 "1905084.y"
                                   { 
 				add_children_and_log (&(yyval.symbol), compound_statement, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 				st->enterScope();
 				st->exitScope();
 			}
-#line 1728 "y.tab.c"
+#line 1607 "y.tab.c"
     break;
 
   case 21: /* var_declaration: type_specifier declaration_list SEMICOLON  */
-#line 334 "1905084.y"
+#line 213 "1905084.y"
                                                             {
 			add_children_and_log (&(yyval.symbol), var_declaration, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			bool global_dec = st->getCurrScopeId() == 1? true : false;
@@ -1746,7 +1625,7 @@ yyreduce:
 				transfer_semantic (&var, &(yyvsp[-2].symbol));
 				if (global_dec) {
 					var->setGlobal();
-					fprintf(datasegout, "\t%s DW 1 DUP (0000H)\n", var->getName());
+					fprintf(asmout, "\t%s DW 1 DUP (0000H)\n", var->getName());
 				} else {
 					stack_offset += 2;
 					var->setStackOffset(stack_offset);
@@ -1757,153 +1636,153 @@ yyreduce:
 			st->setCurrScopeVarCount(st->getCurrScopeVarCount() + (yyval.symbol)->getVarDecCount());
 			delete var_list;
 		 }
-#line 1761 "y.tab.c"
+#line 1640 "y.tab.c"
     break;
 
   case 22: /* type_specifier: INT  */
-#line 364 "1905084.y"
+#line 243 "1905084.y"
                       { add_children_and_log (&(yyval.symbol), type_specifier, 1, &(yyvsp[0].symbol)), (yyval.symbol)->setSemanticType((yyvsp[0].symbol)->getType()); }
-#line 1767 "y.tab.c"
+#line 1646 "y.tab.c"
     break;
 
   case 23: /* type_specifier: FLOAT  */
-#line 365 "1905084.y"
+#line 244 "1905084.y"
                         { add_children_and_log (&(yyval.symbol), type_specifier, 1, &(yyvsp[0].symbol)), (yyval.symbol)->setSemanticType((yyvsp[0].symbol)->getType()); }
-#line 1773 "y.tab.c"
+#line 1652 "y.tab.c"
     break;
 
   case 24: /* type_specifier: VOID  */
-#line 366 "1905084.y"
+#line 245 "1905084.y"
                         { add_children_and_log (&(yyval.symbol), type_specifier, 1, &(yyvsp[0].symbol)), (yyval.symbol)->setSemanticType((yyvsp[0].symbol)->getType()); }
-#line 1779 "y.tab.c"
+#line 1658 "y.tab.c"
     break;
 
   case 25: /* declaration_list: declaration_list COMMA ID  */
-#line 369 "1905084.y"
+#line 248 "1905084.y"
                                              {
 			add_children_and_log (&(yyval.symbol), declaration_list, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			var_list->append((yyvsp[0].symbol));
 		  }
-#line 1788 "y.tab.c"
+#line 1667 "y.tab.c"
     break;
 
   case 26: /* declaration_list: declaration_list COMMA ID LSQUARE CONST_INT RSQUARE  */
-#line 373 "1905084.y"
+#line 252 "1905084.y"
                                                                         {
 			add_children_and_log (&(yyval.symbol), declaration_list, 6, &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			(yyvsp[-3].symbol)->setArray();
 			var_list->append((yyvsp[-3].symbol));
 		  }
-#line 1798 "y.tab.c"
+#line 1677 "y.tab.c"
     break;
 
   case 27: /* declaration_list: ID  */
-#line 378 "1905084.y"
+#line 257 "1905084.y"
                        {
 			add_children_and_log (&(yyval.symbol), declaration_list, 1, &(yyvsp[0].symbol));
 			var_list = new ArrayList<SymbolInfo*>();
 			var_list->append((yyvsp[0].symbol));
 		  }
-#line 1808 "y.tab.c"
+#line 1687 "y.tab.c"
     break;
 
   case 28: /* declaration_list: ID LSQUARE CONST_INT RSQUARE  */
-#line 383 "1905084.y"
+#line 262 "1905084.y"
                                                  {
 			add_children_and_log (&(yyval.symbol), declaration_list, 4, &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			var_list = new ArrayList<SymbolInfo*>();
 			(yyvsp[-3].symbol)->setArray();
 			var_list->append((yyvsp[-3].symbol));
 		  }
-#line 1819 "y.tab.c"
+#line 1698 "y.tab.c"
     break;
 
   case 29: /* statements: statement  */
-#line 391 "1905084.y"
+#line 270 "1905084.y"
                        { add_children_and_log (&(yyval.symbol), statements, 1, &(yyvsp[0].symbol)); }
-#line 1825 "y.tab.c"
+#line 1704 "y.tab.c"
     break;
 
   case 30: /* statements: statements statement  */
-#line 392 "1905084.y"
+#line 271 "1905084.y"
                                   { add_children_and_log (&(yyval.symbol), statements, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1831 "y.tab.c"
+#line 1710 "y.tab.c"
     break;
 
   case 31: /* statement: var_declaration  */
-#line 395 "1905084.y"
+#line 274 "1905084.y"
                             { add_children_and_log (&(yyval.symbol), statement, 1, &(yyvsp[0].symbol)); }
-#line 1837 "y.tab.c"
+#line 1716 "y.tab.c"
     break;
 
   case 32: /* statement: expression_statement  */
-#line 396 "1905084.y"
+#line 275 "1905084.y"
                                  { add_children_and_log (&(yyval.symbol), statement, 1, &(yyvsp[0].symbol)); }
-#line 1843 "y.tab.c"
+#line 1722 "y.tab.c"
     break;
 
   case 33: /* statement: compound_statement  */
-#line 397 "1905084.y"
+#line 276 "1905084.y"
                                { add_children_and_log (&(yyval.symbol), statement, 1, &(yyvsp[0].symbol)); }
-#line 1849 "y.tab.c"
+#line 1728 "y.tab.c"
     break;
 
   case 34: /* statement: FOR LPAREN expression_statement expression_statement expression RPAREN statement  */
-#line 398 "1905084.y"
+#line 277 "1905084.y"
                                                                                              { 
 			add_children_and_log (&(yyval.symbol), statement, 7, &(yyvsp[-6].symbol), &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 	  }
-#line 1857 "y.tab.c"
+#line 1736 "y.tab.c"
     break;
 
   case 35: /* statement: IF LPAREN expression RPAREN statement  */
-#line 401 "1905084.y"
+#line 280 "1905084.y"
                                                                         { add_children_and_log (&(yyval.symbol), statement, 5, &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1863 "y.tab.c"
+#line 1742 "y.tab.c"
     break;
 
   case 36: /* statement: IF LPAREN expression RPAREN statement ELSE statement  */
-#line 402 "1905084.y"
+#line 281 "1905084.y"
                                                                  { add_children_and_log (&(yyval.symbol), statement, 7, &(yyvsp[-6].symbol), &(yyvsp[-5].symbol), &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1869 "y.tab.c"
+#line 1748 "y.tab.c"
     break;
 
   case 37: /* statement: WHILE LPAREN expression RPAREN statement  */
-#line 403 "1905084.y"
+#line 282 "1905084.y"
                                                      { add_children_and_log (&(yyval.symbol), statement, 5, &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1875 "y.tab.c"
+#line 1754 "y.tab.c"
     break;
 
   case 38: /* statement: PRINTLN LPAREN variable RPAREN SEMICOLON  */
-#line 404 "1905084.y"
+#line 283 "1905084.y"
                                                      { add_children_and_log (&(yyval.symbol), statement, 5, &(yyvsp[-4].symbol), &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1881 "y.tab.c"
+#line 1760 "y.tab.c"
     break;
 
   case 39: /* statement: RETURN expression SEMICOLON  */
-#line 405 "1905084.y"
+#line 284 "1905084.y"
                                         { 
 			add_children_and_log (&(yyval.symbol), statement, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 			if (scope_function->getSemanticType() == tVOID) 
 				err_count++, fprintf (errorout, "Line# %d: Return from void function\n", (yyvsp[-2].symbol)->getStartLine(), (yyvsp[-2].symbol)->getName()); 
 	  }
-#line 1891 "y.tab.c"
+#line 1770 "y.tab.c"
     break;
 
   case 40: /* expression_statement: SEMICOLON  */
-#line 412 "1905084.y"
+#line 291 "1905084.y"
                                  { add_children_and_log (&(yyval.symbol), expression_statement, 1, &(yyvsp[0].symbol)); }
-#line 1897 "y.tab.c"
+#line 1776 "y.tab.c"
     break;
 
   case 41: /* expression_statement: expression SEMICOLON  */
-#line 413 "1905084.y"
+#line 292 "1905084.y"
                                                 { add_children_and_log (&(yyval.symbol), expression_statement, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); }
-#line 1903 "y.tab.c"
+#line 1782 "y.tab.c"
     break;
 
   case 42: /* variable: ID  */
-#line 416 "1905084.y"
+#line 295 "1905084.y"
               { 
 		SymbolInfo* defined = st->lookUp((yyvsp[0].symbol)->getName());
 		add_children_and_log (&(yyval.symbol), variable, 1, &(yyvsp[0].symbol));
@@ -1913,11 +1792,11 @@ yyreduce:
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", (yyvsp[0].symbol)->getStartLine(), (yyvsp[0].symbol)->getName()); 
 		transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); 
 	 }
-#line 1917 "y.tab.c"
+#line 1796 "y.tab.c"
     break;
 
   case 43: /* variable: ID LSQUARE expression RSQUARE  */
-#line 425 "1905084.y"
+#line 304 "1905084.y"
                                          { 
 		SymbolInfo* defined = st->lookUp((yyvsp[-3].symbol)->getName());
 		add_children_and_log (&(yyval.symbol), variable, 4, &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
@@ -1928,17 +1807,17 @@ yyreduce:
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", (yyvsp[-3].symbol)->getStartLine(), (yyvsp[-3].symbol)->getName());
 		transfer_semantic (&(yyval.symbol), &(yyvsp[-3].symbol)); 
 	 }
-#line 1932 "y.tab.c"
+#line 1811 "y.tab.c"
     break;
 
   case 44: /* expression: logic_expression  */
-#line 437 "1905084.y"
+#line 316 "1905084.y"
                               { add_children_and_log (&(yyval.symbol), expression, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 1938 "y.tab.c"
+#line 1817 "y.tab.c"
     break;
 
   case 45: /* expression: variable ASSIGNOP logic_expression  */
-#line 438 "1905084.y"
+#line 317 "1905084.y"
                                                      { 
 			if ((yyvsp[0].symbol)->getSemanticType() == tVOID) 
 				err_count++, fprintf (errorout, "Line# %d: Void cannot be used in expression \n", (yyvsp[-2].symbol)->getStartLine());
@@ -1946,17 +1825,17 @@ yyreduce:
 				err_count++, fprintf (errorout, "Line# %d: Warning: possible loss of data in assignment of FLOAT to INT\n", (yyvsp[-2].symbol)->getStartLine());
 			add_children_and_log (&(yyval.symbol), expression, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[-2].symbol));;
 		}
-#line 1950 "y.tab.c"
+#line 1829 "y.tab.c"
     break;
 
   case 46: /* logic_expression: rel_expression  */
-#line 447 "1905084.y"
+#line 326 "1905084.y"
                                         { add_children_and_log (&(yyval.symbol), logic_expression, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 1956 "y.tab.c"
+#line 1835 "y.tab.c"
     break;
 
   case 47: /* logic_expression: rel_expression LOGICOP rel_expression  */
-#line 448 "1905084.y"
+#line 327 "1905084.y"
                                                          { 
 			add_children_and_log (&(yyval.symbol), logic_expression, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 			if ((yyvsp[-2].symbol)->getSemanticType() != tINT || (yyvsp[0].symbol)->getSemanticType() != tINT)
@@ -1964,49 +1843,49 @@ yyreduce:
 			if ((yyvsp[-2].symbol)->getSemanticType() == tVOID || (yyvsp[0].symbol)->getSemanticType() == tVOID) (yyval.symbol)->setSemanticType(tVOID);
 			else (yyval.symbol)->setSemanticType(tINT);
 		 }
-#line 1968 "y.tab.c"
+#line 1847 "y.tab.c"
     break;
 
   case 48: /* rel_expression: simple_expression  */
-#line 457 "1905084.y"
+#line 336 "1905084.y"
                                     { add_children_and_log (&(yyval.symbol), rel_expression, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 1974 "y.tab.c"
+#line 1853 "y.tab.c"
     break;
 
   case 49: /* rel_expression: simple_expression RELOP simple_expression  */
-#line 458 "1905084.y"
+#line 337 "1905084.y"
                                                                 { 
 			add_children_and_log (&(yyval.symbol), rel_expression, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)); 
 			if ((yyvsp[-2].symbol)->getSemanticType() == tVOID) (yyval.symbol)->setSemanticType(tVOID);
 			else (yyval.symbol)->setSemanticType(tINT);
 		}
-#line 1984 "y.tab.c"
+#line 1863 "y.tab.c"
     break;
 
   case 50: /* simple_expression: term  */
-#line 465 "1905084.y"
+#line 344 "1905084.y"
                          { add_children_and_log (&(yyval.symbol), simple_expression, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 1990 "y.tab.c"
+#line 1869 "y.tab.c"
     break;
 
   case 51: /* simple_expression: simple_expression ADDOP term  */
-#line 466 "1905084.y"
+#line 345 "1905084.y"
                                                  { 
 				add_children_and_log (&(yyval.symbol), simple_expression, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 				if ((yyvsp[-2].symbol)->getSemanticType() == tFLOAT && (yyvsp[0].symbol)->getSemanticType() != tVOID) transfer_semantic (&(yyval.symbol), &(yyvsp[-2].symbol));
 				else transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol));
 		  }
-#line 2000 "y.tab.c"
+#line 1879 "y.tab.c"
     break;
 
   case 52: /* term: unary_expression  */
-#line 473 "1905084.y"
+#line 352 "1905084.y"
                          { add_children_and_log (&(yyval.symbol), term, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 2006 "y.tab.c"
+#line 1885 "y.tab.c"
     break;
 
   case 53: /* term: term MULOP unary_expression  */
-#line 474 "1905084.y"
+#line 353 "1905084.y"
                                      { 
 			add_children_and_log (&(yyval.symbol), term, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			if ((yyvsp[-2].symbol)->getSemanticType() == tFLOAT && (yyvsp[0].symbol)->getSemanticType() != tVOID) transfer_semantic (&(yyval.symbol), &(yyvsp[-2].symbol));
@@ -2019,40 +1898,40 @@ yyreduce:
 					err_count++, fprintf (errorout, "Line# %d: Operands of modulus must be integers \n", (yyvsp[-2].symbol)->getStartLine());
 			};
 	 }
-#line 2023 "y.tab.c"
+#line 1902 "y.tab.c"
     break;
 
   case 54: /* unary_expression: ADDOP unary_expression  */
-#line 488 "1905084.y"
+#line 367 "1905084.y"
                                            { add_children_and_log (&(yyval.symbol), unary_expression, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 2029 "y.tab.c"
+#line 1908 "y.tab.c"
     break;
 
   case 55: /* unary_expression: NOT unary_expression  */
-#line 489 "1905084.y"
+#line 368 "1905084.y"
                                         { 
 			add_children_and_log (&(yyval.symbol), unary_expression, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 			if ((yyvsp[0].symbol)->getSemanticType() != tINT)
 				err_count++, fprintf (errorout, "Line# %d: Not operator cannot be applied to non-integer\n", (yyvsp[-1].symbol)->getStartLine()); 
 			transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol));
 		 }
-#line 2040 "y.tab.c"
+#line 1919 "y.tab.c"
     break;
 
   case 56: /* unary_expression: factor  */
-#line 495 "1905084.y"
+#line 374 "1905084.y"
                           { add_children_and_log (&(yyval.symbol), unary_expression, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 2046 "y.tab.c"
+#line 1925 "y.tab.c"
     break;
 
   case 57: /* factor: variable  */
-#line 498 "1905084.y"
+#line 377 "1905084.y"
                    { add_children_and_log (&(yyval.symbol), factor, 1, &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); }
-#line 2052 "y.tab.c"
+#line 1931 "y.tab.c"
     break;
 
   case 58: /* factor: ID LPAREN argument_list RPAREN  */
-#line 499 "1905084.y"
+#line 378 "1905084.y"
                                          { 
 		add_children_and_log (&(yyval.symbol), factor, 4, &(yyvsp[-3].symbol), &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 		SymbolInfo* defined = st->lookUp((yyvsp[-3].symbol)->getName());
@@ -2083,80 +1962,80 @@ yyreduce:
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared function '%s'\n", (yyvsp[-3].symbol)->getStartLine(), (yyvsp[-3].symbol)->getName()); 
 		transfer_semantic (&(yyval.symbol), &(yyvsp[-3].symbol)); 
 	}
-#line 2087 "y.tab.c"
+#line 1966 "y.tab.c"
     break;
 
   case 59: /* factor: LPAREN expression RPAREN  */
-#line 529 "1905084.y"
+#line 408 "1905084.y"
                                    { add_children_and_log (&(yyval.symbol), factor, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[-1].symbol)); }
-#line 2093 "y.tab.c"
+#line 1972 "y.tab.c"
     break;
 
   case 60: /* factor: CONST_INT  */
-#line 530 "1905084.y"
+#line 409 "1905084.y"
                      { 
 		add_children_and_log (&(yyval.symbol), factor, 1, &(yyvsp[0].symbol));
 		if (!strtol((yyvsp[0].symbol)->getName(), nullptr, 10)) (yyvsp[0].symbol)->setZero();
 		transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); 
 	}
-#line 2103 "y.tab.c"
+#line 1982 "y.tab.c"
     break;
 
   case 61: /* factor: CONST_FLOAT  */
-#line 535 "1905084.y"
+#line 414 "1905084.y"
                       { 
 		add_children_and_log (&(yyval.symbol), factor, 1, &(yyvsp[0].symbol));
 		if (strtof((yyvsp[0].symbol)->getName(), nullptr) == 0.0f) (yyvsp[0].symbol)->setZero();
 		transfer_semantic (&(yyval.symbol), &(yyvsp[0].symbol)); 
 	}
-#line 2113 "y.tab.c"
+#line 1992 "y.tab.c"
     break;
 
   case 62: /* factor: variable INCOP  */
-#line 540 "1905084.y"
+#line 419 "1905084.y"
                          { add_children_and_log (&(yyval.symbol), factor, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[-1].symbol)); }
-#line 2119 "y.tab.c"
+#line 1998 "y.tab.c"
     break;
 
   case 63: /* factor: variable DECOP  */
-#line 541 "1905084.y"
+#line 420 "1905084.y"
                          { add_children_and_log (&(yyval.symbol), factor, 2, &(yyvsp[-1].symbol), &(yyvsp[0].symbol)), transfer_semantic (&(yyval.symbol), &(yyvsp[-1].symbol)); }
-#line 2125 "y.tab.c"
+#line 2004 "y.tab.c"
     break;
 
   case 64: /* argument_list: arguments  */
-#line 544 "1905084.y"
+#line 423 "1905084.y"
                           { add_children_and_log (&(yyval.symbol), argument_list, 1, &(yyvsp[0].symbol)); }
-#line 2131 "y.tab.c"
+#line 2010 "y.tab.c"
     break;
 
   case 65: /* argument_list: %empty  */
-#line 545 "1905084.y"
+#line 424 "1905084.y"
                             { add_children_and_log (&(yyval.symbol), argument_list, 0); }
-#line 2137 "y.tab.c"
+#line 2016 "y.tab.c"
     break;
 
   case 66: /* arguments: arguments COMMA logic_expression  */
-#line 548 "1905084.y"
+#line 427 "1905084.y"
                                              { 
 				add_children_and_log (&(yyval.symbol), arguments, 3, &(yyvsp[-2].symbol), &(yyvsp[-1].symbol), &(yyvsp[0].symbol));
 				arg_list->append((yyvsp[0].symbol));
 		  }
-#line 2146 "y.tab.c"
+#line 2025 "y.tab.c"
     break;
 
   case 67: /* arguments: logic_expression  */
-#line 552 "1905084.y"
+#line 431 "1905084.y"
                                  { 
 				add_children_and_log (&(yyval.symbol), arguments, 1, &(yyvsp[0].symbol)); 
 				arg_list = new ArrayList<SymbolInfo*>();
 				arg_list->append((yyvsp[0].symbol));
 		  }
-#line 2156 "y.tab.c"
+#line 2035 "y.tab.c"
     break;
 
 
-#line 2160 "y.tab.c"
+#line 2039 "y.tab.c"
 
       default: break;
     }
@@ -2349,7 +2228,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 559 "1905084.y"
+#line 438 "1905084.y"
 
 
 int main (int argc, char *argv[]) {
@@ -2363,12 +2242,15 @@ int main (int argc, char *argv[]) {
 	logout = fopen("log.txt","w");
 	if (argc > 2) asmout = fopen(argv[2], "w");
 	else asmout = fopen("output.asm", "w");
-	datasegout = fopen(".data_seg.asm", "w");
+	/* datasegout = fopen(".data_seg.asm", "w"); */
 	init_strings();
 	yyin = fp;
 	st = new SymbolTable(11);
 
+	write_pre_code_seg();
 	yyparse();
+	write_predefined_procs();
+
  	fprintf(logout, "Total Lines: %d\n", line_count);
  	fprintf(logout, "Total Errors: %d\n", err_count);
 	fclose(parseout), fclose(errorout), fclose(logout);

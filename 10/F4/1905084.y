@@ -1,6 +1,7 @@
 %{
 
 #include "1905084_code_generator.h"
+#include "1905084_optimiser.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ int line_count = 1, err_count = 0, stack_offset = 0, label_count = 0;
 extern FILE *yyin;
 bool function_scope = false;
 SymbolInfo* scope_function = nullptr;
-FILE *fp, *parseout, *errorout, *logout, *asmout, *procsegout;
+FILE *fp, *parseout, *errorout, *logout, *asmout, *optimout, *unoptimin;
 
 SymbolTable* st;
 ArrayList<SymbolInfo*> *var_list = nullptr, *param_list = nullptr, *arg_list = nullptr;
@@ -59,9 +60,10 @@ void add_children_and_log (SymbolInfo** parent, char* name, int n, ... ) {
 void transfer_semantic (SymbolInfo** parent, SymbolInfo** child) {
 	(*parent)->setSemanticType((*child)->getSemanticType());
 	(*parent)->setStackOffset((*child)->getStackOffset());
-	if ((*child)->isArray()) (*parent)->setArray();
+	if ((*child)->isArray()) (*parent)->setArray ((*child)->getArraySize());
 	if ((*child)->isZero()) (*parent)->setZero();
 	if ((*child)->isGlobal()) (*parent)->setGlobal();
+	//cout << "transferring " << (*child)->getName() << " (" << (*child)->getStartLine() << ") to " << (*parent)->getName() << " (" << (*parent)->getStartLine() << ")" << endl;
 };
 
 void print_parse_tree (SymbolInfo* symbol, int depth = 0) {
@@ -140,6 +142,7 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON {
 func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 			transfer_semantic (&$2, &$1), $2->setFunction(), $2->setParams (param_list);
 			st->insert($2);
+			stack_offset = - (2 * param_list->length() + 4);
 			st->enterScope(); function_scope = true, scope_function = $2;
 			if (param_list) {
 				for (param_list->moveToStart(); param_list->currPos() < param_list->length(); param_list->next()) {
@@ -149,8 +152,11 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 						break;
 					};
 					st->insert(param);
+					stack_offset += 2;
+					param->setStackOffset (stack_offset);
 				};
 			};
+			stack_offset = 0;
 		} compound_statement { 
 			SymbolInfo* predefined = st->lookUp($2->getName());
 			if (predefined) {
@@ -168,6 +174,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 			transfer_semantic (&$2, &$1), $2->setFunction();
 			st->insert($2);
 			st->enterScope(); function_scope = true, scope_function = $2; 
+			stack_offset = 0;
 		} compound_statement { 
 			add_children_and_log (&$$, func_definition, 5, &$1, &$2, &$3, &$4, &$6);
 			scope_function = nullptr; 
@@ -200,6 +207,7 @@ parameter_list  : parameter_list COMMA type_specifier ID  {
 compound_statement : LCURL {if (!function_scope) st->enterScope(); else function_scope = false;} statements RCURL  { 
 				add_children_and_log (&$$, compound_statement, 3, &$1, &$3, &$4); 
 				$$->setVarDecCount(st->getCurrScopeVarCount());
+				scope_function->setVarDecCount (st-> getCurrScopeVarCount());
 				st->printAllScope(logout);
 				st->exitScope();
 			}	
@@ -213,6 +221,7 @@ compound_statement : LCURL {if (!function_scope) st->enterScope(); else function
 var_declaration : type_specifier declaration_list SEMICOLON {
 			add_children_and_log (&$$, var_declaration, 3, &$1, &$2, &$3);
 			bool global_dec = st->getCurrScopeId() == 1? true : false;
+			int dec_length = 0;
 			for (var_list->moveToStart(); var_list->currPos() < var_list->length(); var_list->next()) {
 				SymbolInfo* var = var_list->getValue();
 				if ($1->getSemanticType() == tVOID) {
@@ -224,17 +233,22 @@ var_declaration : type_specifier declaration_list SEMICOLON {
 					if (predefined->getSemanticType() != $1->getSemanticType())
 						err_count++, fprintf (errorout, "Line# %d: Conflicting types for'%s'\n", var->getStartLine(), predefined->getName()); 						
 				};
-				transfer_semantic (&var, &$1);
+				//transfer_semantic (&var, &$1);
+				var->setSemanticType ($1->getSemanticType());
 				if (global_dec) {
 					var->setGlobal();
-					fprintf(asmout, "\t%s DW 1 DUP (0000H)\n", var->getName());
+					fprintf (asmout, "\t");
+					fprint_var_name_code (var);
+					if (var->isArray()) fprintf(asmout, " DW %d DUP (0000H)\n", var->getArraySize()), dec_length += 1;
+					else fprintf(asmout, " DW 1 DUP (0000H)\n"), dec_length += var->getArraySize();
 				} else {
-					stack_offset += 2;
-					var->setStackOffset(stack_offset);
+					var->setStackOffset (stack_offset + 2);
+					if (!var->isArray()) stack_offset += 2, dec_length++;
+					else stack_offset += 2 * var->getArraySize(), dec_length += var->getArraySize();
 				};
 				st->insert(var);
 			};
-			$$->setVarDecCount(var_list->length());
+			$$->setVarDecCount(dec_length);
 			st->setCurrScopeVarCount(st->getCurrScopeVarCount() + $$->getVarDecCount());
 			delete var_list;
 		 }
@@ -251,7 +265,7 @@ declaration_list : declaration_list COMMA ID {
 		  }
  		  | declaration_list COMMA ID LSQUARE CONST_INT RSQUARE {
 			add_children_and_log (&$$, declaration_list, 6, &$1, &$2, &$3, &$4, &$5, &$6);
-			$3->setArray();
+			$3->setArray (strtol($5->getName(), nullptr, 10));
 			var_list->append($3);
 		  }
  		  | ID {
@@ -262,7 +276,7 @@ declaration_list : declaration_list COMMA ID {
  		  | ID LSQUARE CONST_INT RSQUARE {
 			add_children_and_log (&$$, declaration_list, 4, &$1, &$2, &$3, &$4);
 			var_list = new ArrayList<SymbolInfo*>();
-			$1->setArray();
+			$1->setArray (strtol($3->getName(), nullptr, 10));
 			var_list->append($1);
 		  }
  		  ;
@@ -305,8 +319,9 @@ variable : ID {
 		SymbolInfo* defined = st->lookUp($1->getName());
 		add_children_and_log (&$$, variable, 4, &$1, &$2, &$3, &$4);
 		if (defined) {
-			if (!defined->isFunction()) $1->setSemanticType(defined->getSemanticType());
+			if (!defined->isFunction()) transfer_semantic (&$1, &defined);
 			if (!defined->isArray()) err_count++, fprintf (errorout, "Line# %d: '%s' is not an array\n", $1->getStartLine(), $1->getName());
+			//else cout << "array (size " << defined->getArraySize() << ") " << defined->getName() << " found in parsing ! "<< line_count << endl;
 			if ($3->getSemanticType() != tINT) err_count++, fprintf (errorout, "Line# %d: Array subscript is not an integer\n", $1->getStartLine());
 		} else err_count++, fprintf (errorout, "Line# %d: Undeclared variable '%s'\n", $1->getStartLine(), $1->getName());
 		transfer_semantic (&$$, &$1); 
@@ -382,7 +397,7 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 			if (defined->isFunction()) {
 				transfer_semantic (&$1, &defined);
 				if (arg_list && arg_list->length() > 0) {
-					cout << "hello ! kuttarbaccha " << $1->getName() << endl;
+					cout << "hello ! " << $1->getName() << endl;
 					ArrayList<SymbolInfo*> *dP = defined->getParams();
 					for (arg_list->moveToStart(), dP->moveToStart(); 
 						dP->currPos() < dP->length() && arg_list->currPos() < arg_list->length(); 
@@ -394,11 +409,12 @@ factor	: variable { add_children_and_log (&$$, factor, 1, &$1), transfer_semanti
 													arg->getStartLine(), arg_list->currPos()+1, $1->getName());
 							};
 					};
+					$1->setParams (arg_list);
 					if (arg_list->length() > dP->length()) 
 						err_count++, fprintf (errorout, "Line# %d: Too many arguments to function '%s'\n", $1->getStartLine(), $1->getName());
 					else if (arg_list->length() < dP->length()) 
 						err_count++, fprintf (errorout, "Line# %d: Too few arguments to function '%s'\n", $1->getStartLine(), $1->getName());	
-					delete arg_list;
+					//delete arg_list;
 					arg_list = nullptr;
 				};
 			} else err_count++, fprintf (errorout, "Line# %d: '%s' is not a function\n", $1->getStartLine(), $1->getName()); 
@@ -446,8 +462,8 @@ int main (int argc, char *argv[]) {
 	parseout = fopen("parsetree.txt","w");
 	errorout = fopen("error.txt","w");
 	logout = fopen("log.txt","w");
-	if (argc > 2) asmout = fopen(argv[2], "w");
-	else asmout = fopen("output.asm", "w");
+	asmout = fopen("code.asm", "w");
+	optimout = fopen("optimized_code.asm", "w");
 	/* datasegout = fopen(".data_seg.asm", "w"); */
 	init_strings();
 	yyin = fp;
@@ -456,10 +472,15 @@ int main (int argc, char *argv[]) {
 	write_pre_code_seg();
 	yyparse();
 	write_predefined_procs();
+	fclose(asmout);
+	unoptimin = fopen("code.asm", "r");
 
  	fprintf(logout, "Total Lines: %d\n", line_count);
  	fprintf(logout, "Total Errors: %d\n", err_count);
 	fclose(parseout), fclose(errorout), fclose(logout);
+
+	fprint_optimise();
+	fclose(unoptimin), fclose(optimout);
 	
 	return 0;
 };

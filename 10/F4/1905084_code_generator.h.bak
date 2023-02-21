@@ -26,23 +26,23 @@ int traversal_line = 1;
 
 void fprint_var_name_code (SymbolInfo* var) {
 	if (var->isGlobal()) {
-		fprintf(asmout, "V");
+		fprintf(asmout, "%s_", var->getName());
 		int L = strlen(var->getName());
 		for (int i=0; i<L; i++) fprintf(asmout, "%d", var->getName()[i]);
 	} else fprintf(asmout, "[BP%+d]", -var->getStackOffset());
 };
 
 void fprint_func_name_code (SymbolInfo* func) {
-	// fprintf(asmout, "%s", func->getName());
+	fprintf(asmout, "%s", func->getName());
 	int L = strlen(func->getName());
 	if (strcmp(func->getName(), "main")) {
-		fprintf(asmout, "F");
+		fprintf(asmout, "_");
 		for (int i=0; i<L; i++) fprintf(asmout, "%d", func->getName()[i]);
-	} else fprintf(asmout, "MAIN");
+	};
 };
 
 void fprint_label (int label = ++label_count) {
-    fprintf (asmout, "L%d:\t\t\t\t;line-%d\n", label, traversal_line);
+    fprintf (asmout, "L%d:\t\t;line-%d\n", label, traversal_line);
 };
 
 int new_label() {
@@ -72,7 +72,6 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 		SymbolInfo* comp_stat;
 		if (node->getChild(3)->getName() == parameter_list) comp_stat = node->getChild(5);
 		else comp_stat = node->getChild(4);
-		fprintf (asmout, ";Definition of %s()\n", node->getChild(1)->getName());
 		fprint_func_name_code (node->getChild(1));
 		fprintf (asmout, " PROC\n");
 		if (!strcmp(scope_function->getName(), "main")) fprintf(asmout, "\tMOV AX, @DATA\n\tMOV DS, AX\n");
@@ -88,17 +87,17 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprint_RET();
 		};
 		fprint_func_name_code (node->getChild(1));
-		fprintf (asmout, " ENDP\t\t;End of definiton of %s()\n\n", node->getChild(1)->getName());
+		fprintf (asmout, " ENDP\n");
 		scope_function = nullptr;
 	} else if (node->getName() == compound_statement) {
 		if (node->getChild(1)->getName() == statements) {
-			//cout << node->getNextLabel() << endl;
+			cout << node->getNextLabel() << endl;
 			fprint_code (node->getChild(1));
 			node->setNextLabel(node->getChild(1)->getNextLabel());
 			// fprint_new_label();
 		};	
 	} else if (node->getName() == statements) {
-		//cout << node->getNextLabel() << " " << __LINE__ << endl;
+		cout << node->getNextLabel() << " " << __LINE__ << endl;
 		if (!node->getNextLabel()) node->setNextLabel(new_label());    // P -> S {S.next = newlabel()}
 		if (node->getChildrenCount() == 1) {
 			node->getFirstChild()->setNextLabel(node->getNextLabel());
@@ -114,11 +113,11 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 	} else if (node->getName() == statement) {
 		// cout << "found if" << endl;
 		//fprintf(asmout, "STATEMENT! %d %d\n", node->getStartLine(), node->getEndLine());
-		//cout << node->getNextLabel() << " " << __LINE__ << endl;
+		cout << node->getNextLabel() << " " << __LINE__ << endl;
 		if (node->getFirstChild()->getName() == var_declaration) {
 			//fprintf(asmout, "\tSUB SP, %d\n", node->getFirstChild()->getVarDecCount() * 2);
 		} else if (node->getFirstChild()->getName() == compound_statement) {
-			//cout << node->getNextLabel() << " " << __LINE__ << endl;
+			cout << node->getNextLabel() << " " << __LINE__ << endl;
 			if (node->getFirstChild()->getChild(1)->getName() == statements) {
 				node->getFirstChild()->getChild(1)->setTrueLabel (node->getTrueLabel());
 				node->getFirstChild()->getChild(1)->setFalseLabel(node->getFalseLabel());
@@ -129,7 +128,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			// node->getFirstChild()->setTrueLabel (node->getTrueLabel());
 			// node->getFirstChild()->setFalseLabel(node->getFalseLabel());
 			// node->getFirstChild()->setNextLabel (node->getNextLabel());
-			//cout << node->getNextLabel() << " " << __LINE__ << endl;
+			cout << node->getNextLabel() << " " << __LINE__ << endl;
 			fprint_code (node->getFirstChild());
 		} else if (!strcmp(node->getFirstChild()->getType(), "PRINTLN")) {
 			node->getFirstChild()->setNextLabel(new_label());	
@@ -139,12 +138,11 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprintf (asmout, "\tMOV AX, ");
 			if (var->isArray()) fprintf(asmout, "[SI]");
 			else fprint_var_name_code (var);
-			fprintf (asmout, "\t\t;variable '%s'", var->getName());
-			fprintf(asmout, "\n\tCALL PRINT_OUTPUT\n\tCALL NEW_LINE\n");
+			fprintf(asmout, "\n\tCALL print_output\n\tCALL new_line\n");
 		} else if (!strcmp(node->getFirstChild()->getType(), "IF") && node->getChildrenCount() == 5) {
 			gen_if_cond = true;
 			node->getChild(2)->setTrueLabel(new_label());
-			//cout << node->getChild(2)->getTrueLabel() << endl;
+			cout << node->getChild(2)->getTrueLabel() << endl;
 			node->getLastChild()->setNextLabel(node->getNextLabel());
 			node->getChild(2)->setFalseLabel(node->getLastChild()->getNextLabel());
 			fprint_code (node->getChild(2), true);
@@ -192,7 +190,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprint_code (node->getChild(2)); cout << node->getChild(3)->getTrueLabel() << endl;
 			fprint_label(node->getChild(2)->getNextLabel()), fprint_code (node->getChild(3), true);
 			fprint_label(node->getChild(6)->getNextLabel()), fprint_code (node->getChild(4));
-			//cout << node->getChild(4)->getNextLabel() << " " << __LINE__ << endl;
+			cout << node->getChild(4)->getNextLabel() << " " << __LINE__ << endl;
 			fprintf (asmout, "\tJMP L%d\n", node->getChild(2)->getNextLabel());
 			fprint_label(node->getChild(3)->getTrueLabel()), fprint_code (node->getChild(6));
 			fprintf (asmout, "\tJMP L%d\n", node->getChild(6)->getNextLabel());
@@ -210,7 +208,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			node->getChild(2)->setFalseLabel(node->getNextLabel());
 			node->getChild(4)->setNextLabel(begin);
 			fprint_label(begin);
-			//cout << "printing while cond...." << endl;
+			cout << "printing while cond...." << endl;
 			fprint_code (node->getChild(2), true);
 			fprint_label(node->getChild(2)->getTrueLabel());
 			fprint_code (node->getChild(4));
@@ -240,8 +238,8 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			};		
 	} else if (node->getName() == expression) {
 		//fprintf(asmout, "expression!!\n");	
-		//cout << "force_bool: " << force_bool << endl;
-		//cout << node->getNextLabel() << " " << __LINE__ << endl;
+		cout << "force_bool: " << force_bool << endl;
+		cout << node->getNextLabel() << " " << __LINE__ << endl;
 		if (node->getFirstChild()->getName() == variable) {
 			fprint_code (node->getLastChild());
 			SymbolInfo* var = node->getFirstChild()->getFirstChild();
@@ -250,8 +248,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprintf (asmout, "\tMOV ");
 			if (var->isArray()) fprintf(asmout, "[SI]");
 			else fprint_var_name_code (var);
-			fprintf(asmout, ", AX");
-			fprintf (asmout, "\t\t;variable '%s'\n", var->getName());
+			fprintf(asmout, ", AX\n", var->getName());
 		} else {
 			node->getFirstChild()->setTrueLabel (node->getTrueLabel());
 			node->getFirstChild()->setFalseLabel(node->getFalseLabel());
@@ -259,7 +256,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprint_code (node->getFirstChild(), force_bool);
 		};
 	} else if (node->getName() == logic_expression) {
-		//cout << node->getNextLabel() << " " << __LINE__ << endl;
+		cout << node->getNextLabel() << " " << __LINE__ << endl;
 		if (!node->getTrueLabel()) node->setTrueLabel(new_label());
 		if (!node->getFalseLabel()) node->setFalseLabel(new_label());
 		if (!node->getNextLabel()) node->setNextLabel(new_label());
@@ -301,10 +298,10 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprint_code (node->getFirstChild(), force_bool);
 		};
 	} else if (node->getName() == rel_expression) {
-		//cout << node->getNextLabel() << " " << __LINE__ << endl;
+		cout << node->getNextLabel() << " " << __LINE__ << endl;
 		if (node->getChildrenCount() > 1) {
 			//fprintf (asmout, "\tPUSH DX\n");
-			//cout << node->getTrueLabel() << endl;
+			cout << node->getTrueLabel() << endl;
 			if (!node->getTrueLabel()) node->setTrueLabel(new_label());
 			if (!node->getFalseLabel()) node->setFalseLabel(new_label());
 			if (!node->getNextLabel()) node->setNextLabel(new_label());
@@ -322,7 +319,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			// if (gen_for_cond) fprintf (asmout, " L%d\n\tJMP L%d\n", label_count+2, label_count+3);
 			// else if (gen_while_cond) fprintf (asmout, " L%d\n\tJMP L%d\n", label_count+1, label_count+3);
 			// else if (gen_if_cond) fprintf (asmout, " L%d\n\tJMP L%d\n", label_count+1, label_count+2);
-			//cout << node->getTrueLabel() << endl;
+			cout << node->getTrueLabel() << endl;
 			fprintf (asmout, " L%d\n\tJMP L%d\n", node->getTrueLabel(), node->getFalseLabel());
 
 			if (!gen_if_cond && !gen_for_cond && !gen_while_cond) {
@@ -388,13 +385,12 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprintf (asmout, "\tMOV AX, %s\n", node->getFirstChild()->getName());
 		} else if (node->getFirstChild()->getName() == variable && node->getChildrenCount() == 1) {
 			SymbolInfo* var = node->getFirstChild()->getFirstChild();
-			//cout << var->getName() << endl;
+			cout << var->getName() << endl;
 			fprint_array (node->getFirstChild());
 			fprintf (asmout, "\tMOV AX, ");
 			if (var->isArray()) fprintf(asmout, "[SI]");
 			else fprint_var_name_code (var);
-			fprintf (asmout, "\t\t;variable '%s'\n", var->getName());
-			// fprintf (asmout, "\n");
+			fprintf (asmout, "\n");
 		} else if (node->getChild(1)->getName() == expression) {
 			fprintf(asmout, "\tPUSH BX\n\tPUSH CX\n\tPUSH DX\n");
 			fprint_code (node->getChild(1));
@@ -412,7 +408,6 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			if (var->isArray()) fprintf(asmout, "[SI]");
 			else fprint_var_name_code (var);
 			fprintf (asmout, ", AX\n\tPOP AX\n");
-			fprintf (asmout, "\t\t;variable '%s'\n", var->getName());
 		} else if (!strcmp(node->getChild(1)->getType(), "DECOP")) {
 			SymbolInfo* var = node->getChild(0)->getFirstChild();
 			fprint_array (node->getFirstChild());
@@ -424,7 +419,6 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			if (var->isArray()) fprintf(asmout, "[SI]");
 			else fprint_var_name_code (var);
 			fprintf (asmout, ", AX\n\tPOP AX\n");
-			fprintf (asmout, "\t\t;variable '%s'\n", var->getName());
 		} else if (!strcmp(node->getFirstChild()->getType(), "ID")) {
 			if (node->getChild(2)->getChildren()) {
 				ArrayList<SymbolInfo*> *args = node->getFirstChild()->getParams();
@@ -435,7 +429,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			};
 			fprintf (asmout, "\tCALL ");
 			fprint_func_name_code (node->getFirstChild());
-			fprintf (asmout, "\t\t;Calling %s()\n", node->getFirstChild()->getName());
+			fprintf (asmout, "\n");
 		};
 
 	} else {
@@ -461,7 +455,7 @@ void fprint_array (SymbolInfo* variable) {
 		} else {
 			fprintf (asmout, "\tLEA SI, ");
 			fprint_var_name_code (variable->getFirstChild());
-			fprintf (asmout, "\t\t;variable '%s'\n", variable->getFirstChild()->getName());
+			//fprintf (asmout, "\n");
 		};
 		fprintf (asmout, "\n\tPUSH AX\n\tPUSH BX\n\tPUSH CX\n\tPUSH DX\n");
 		fprint_code (variable->getChild(2));
@@ -470,3 +464,8 @@ void fprint_array (SymbolInfo* variable) {
 		fprintf (asmout, "\tPOP DX\n\tPOP CX\n\tPOP BX\n\tPOP AX\n");
 	};
 };
+
+
+void fprint_optimise() {
+
+}

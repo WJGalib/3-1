@@ -268,7 +268,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			if (!strcmp(node->getChild(1)->getName(), "||")) {
 				//l0 = label_count + 2, l1 = label_count + 1, l2 = label_count + 2, l3 = label_count + 3, l4 = label_count + 4;
 				node->getChild(0)->setTrueLabel (node->getTrueLabel());
-				node->getChild(0)->setFalseLabel (new_label());
+				if (!node->getChild(0)->getFalseLabel()) node->getChild(0)->setFalseLabel (new_label());
 				node->getChild(2)->setTrueLabel (node->getTrueLabel());
 				node->getChild(2)->setFalseLabel (node->getFalseLabel());
 				fprint_code (node->getChild(0), true);
@@ -277,7 +277,7 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 				//fprintf (asmout, "\tCMP AX, 0\n\tJNE L%d\n\tJMP L%d\n", l2, l3);
 			} else if (!strcmp(node->getChild(1)->getName(), "&&")) {
 				//l0 = label_count + 1, l1 = label_count + 4, l2 = label_count + 2, l3 = label_count + 3, l4 = label_count + 4;
-				node->getChild(0)->setTrueLabel (new_label());
+				if (!node->getChild(0)->getTrueLabel()) node->getChild(0)->setTrueLabel (new_label());
 				node->getChild(0)->setFalseLabel (node->getFalseLabel());
 				node->getChild(2)->setTrueLabel (node->getTrueLabel());
 				node->getChild(2)->setFalseLabel (node->getFalseLabel());
@@ -341,14 +341,18 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 				if (!node->getFalseLabel()) node->setFalseLabel(new_label());
 				if (!node->getNextLabel()) node->setNextLabel(new_label());
 			};	
-			fprint_code (node->getFirstChild());
+			fprint_code (node->getFirstChild(), force_bool);
 			if (force_bool) {
 				fprintf (asmout, "\tCMP AX, 0\n\tJNE L%d\n\tJMP L%d\n", node->getTrueLabel(), node->getFalseLabel());
 			};	
 		};
 	} else if (node->getName() == simple_expression) {
-		if (node->getFirstChild()->getName() == term) fprint_code (node->getFirstChild());
-		else {
+		if (node->getFirstChild()->getName() == term) {
+			node->getFirstChild()->setTrueLabel (node->getTrueLabel());
+			node->getFirstChild()->setFalseLabel(node->getFalseLabel());
+			node->getFirstChild()->setNextLabel (node->getNextLabel());
+			fprint_code (node->getFirstChild(), force_bool);
+		} else {
 			if (scope_function) fprintf (asmout, "\tPUSH BX\n");
 			fprint_code (node->getChild(0));
 			fprintf (asmout, "\tMOV BX, AX\n");
@@ -360,8 +364,12 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			//fprintf (asmout, "AX, DX\n");
 		};
 	} else if (node->getName() == term) {
-		if (node->getFirstChild()->getName() == unary_expression) fprint_code (node->getFirstChild());
-		else {
+		if (node->getFirstChild()->getName() == unary_expression) {
+			node->getFirstChild()->setTrueLabel (node->getTrueLabel());
+			node->getFirstChild()->setFalseLabel(node->getFalseLabel());
+			node->getFirstChild()->setNextLabel (node->getNextLabel());
+			fprint_code (node->getFirstChild(), force_bool);
+		} else {
 			if (scope_function) fprintf (asmout, "\tPUSH CX\n");
 			fprint_code (node->getChild(0));
 			fprintf (asmout, "\tMOV CX, AX\n");
@@ -377,8 +385,12 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			if (scope_function) fprintf (asmout, "\tPOP CX\n");
 		};
 	} else if (node->getName() == unary_expression) {
-		if (node->getFirstChild()->getName() == factor) fprint_code (node->getFirstChild());
-		else if (!strcmp(node->getFirstChild()->getType(), "ADDOP")) {
+		if (node->getFirstChild()->getName() == factor) {
+			node->getFirstChild()->setTrueLabel (node->getTrueLabel());
+			node->getFirstChild()->setFalseLabel(node->getFalseLabel());
+			node->getFirstChild()->setNextLabel (node->getNextLabel());
+			fprint_code (node->getFirstChild(), force_bool);
+		} else if (!strcmp(node->getFirstChild()->getType(), "ADDOP")) {
 			fprint_code (node->getChild(1));
 			if (!strcmp(node->getFirstChild()->getName(), "-")) 
 				fprintf (asmout, "\tNEG AX\n");
@@ -396,9 +408,12 @@ void fprint_code (SymbolInfo* node, bool force_bool = false) {
 			fprintf (asmout, "\t\t;variable '%s'\n", var->getName());
 			// fprintf (asmout, "\n");
 		} else if (node->getChild(1)->getName() == expression) {
-			fprintf(asmout, "\tPUSH BX\n\tPUSH CX\n\tPUSH DX\n");
+			if (!force_bool) fprintf(asmout, "\tPUSH BX\n\tPUSH CX\n\tPUSH DX\n");
+			node->getChild(1)->setTrueLabel (node->getTrueLabel());
+			node->getChild(1)->setFalseLabel(node->getFalseLabel());
+			node->getChild(1)->setNextLabel (node->getNextLabel());
 			fprint_code (node->getChild(1));
-			fprintf(asmout, "\tPOP DX\n\tPOP CX\n\tPOP BX\n");
+			if (!force_bool) fprintf(asmout, "\tPOP DX\n\tPOP CX\n\tPOP BX\n");
 		} else if (!strcmp(node->getChild(1)->getType(), "INCOP")) {
 			SymbolInfo* var = node->getChild(0)->getFirstChild();
 			// fprintf (asmout, "\tPUSH AX\n\tMOV AX, ");

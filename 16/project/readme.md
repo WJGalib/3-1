@@ -46,7 +46,7 @@ The central system will notify the cars when the users prompt it to start a game
 
 ## Design Outline
 
-Design details can be seen [here](_PROJECT_FINAL/design)
+Design details can be seen [here](_PROJECT_FINAL/design).
 
 ![Block Diagram](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/block_diagram.jpg)
 

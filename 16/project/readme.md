@@ -1,4 +1,8 @@
 # Race
+This directory contains all of the resources related to our CSE316 Microcontroller term project. Our project was a Bluetooth-controlled racing game with two cars. 
+
+![Race Game Setup](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/game.jpg)
+
  
 ## Motivation
 Promoting physical activities, movement and fun combined with  technological involvement. Remote controlled race cars were a thing in our childhood, but its popularity diminished along with many other hardware-based games while software games became more dominant over the years.
@@ -17,7 +21,6 @@ The track will actually contain no circuit elements. It will be a passive struct
 
 The central system will notify the cars when the users prompt it to start a game. Entering that state, the cars will be allowed to start moving only when they are placed on the start line, and the game is started. Whenever a car crosses a specific line, its RFID module will detect the identity of the line and change the “state” of the car in the microcontroller’s program. When a car passes through the sequence of “start-middle-finish”, that movement will be recognised as the completion of a lap in the race, and the car will inform the central system through its RF module that it has completed a lap. All other state sequences will be rejected. The central system will keep track of how many laps each car has completed and in how much time. When a car completes N loops in the least amount of time from game start, the game will end and the central system will display the winner, and then shortly afterwards, prompt to start another game. We may keep the value of N (the number of laps in a game) fixed, or add functionality to customise it through some form of user input later. It is worth mentioning that the task of recognising lap completion is to be done by the cars instead of the central system, because RFID modules of suitable size or any other sensors to reliably scan an area of such size and then also recognise specifically which car crossed, seemed to not be available. 
 
-![Race Game Setup](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/game.jpg)
 
 ## Instruments
 
@@ -40,6 +43,21 @@ The central system will notify the cars when the users prompt it to start a game
 | Bread Board              | Mini (17x10)        | Several  |
 | PVC Sheet                | 3mm A4 / 24"x20"    | Lots     |
 | Voltage Converter        | Buck Module         | 2        |
+
+## Design Outline
+
+Design details can be seen [here](_PROJECT_FINAL/design)
+
+## Hardware Implementation 
+
+The cars and the central system:
+
+![Cars and System](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/hardware.jpg)
+
+The circuit elements (start/middle/end line and power-down pickups): 
+
+![Track Elements](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/track_elements.jpg)
+
 
 ## Contributions
 The Team :

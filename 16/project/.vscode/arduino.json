@@ -1,7 +1,0 @@
-{
-    "port": "/dev/ttyUSB0",
-    "board": "arduino:avr:nano",
-    "programmer": "arduino:avrispmkii",
-    "sketch": "car1_logic/car1_logic.ino",
-    "configuration": "cpu=atmega328"
-}

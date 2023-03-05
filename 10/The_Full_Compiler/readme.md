@@ -1,5 +1,5 @@
 # CSE 8086 C-Compiler
-This compiler is a culmination of the four assignments of the CSE310 Compiler Sessional course, each of which incrementally cover the four steps of compilation. The compiler compiles a subset of the C language with a [simplified grammar](../F3/grammar.txt) to assembly code for the [EMU8086](./emu8086-setup.exe), an emulator of the ancient [Intel 8086](https://en.wikipedia.org/wiki/Intel_8086) CPU. 
+This compiler is a culmination of the four assignments of the [CSE310 Compiler Sessional](/..) course, each of which incrementally cover the four steps of compilation. The compiler compiles a subset of the C language with a [simplified grammar](../F3/grammar.txt) to assembly code for the [EMU8086](./emu8086-setup.exe), an emulator of the ancient [Intel 8086](https://en.wikipedia.org/wiki/Intel_8086) CPU. 
 
 ## Usage
 

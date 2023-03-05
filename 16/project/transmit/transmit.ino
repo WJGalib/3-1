@@ -22,7 +22,7 @@ LiquidCrystal_I2C lcd(0x3F, 20, 4);
 #define MID_SEEN 'M'
 #define END_SEEN 'E'
 
-#define TOTAL_ROUNDS '2'
+#define TOTAL_ROUNDS '3'
 
 #define FREE_BUTTON_PIN 6
 #define GAME_BUTTON_PIN 7
@@ -194,6 +194,7 @@ void loop() {
         else {
           gameState = GAME_MODE;
           setTime(0);
+          carTimes[0] = carTimes[1] = 0;
           timer_i = 0;
         }
       }

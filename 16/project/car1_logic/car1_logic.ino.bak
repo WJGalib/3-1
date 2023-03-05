@@ -1,5 +1,4 @@
 #include <SPI.h>
-#include <Time.h>
 #include <MFRC522.h>
 #include <nRF24L01.h>
 #include <RF24.h>
@@ -14,6 +13,8 @@
 
 #define RST_PIN 9  // Configurable, see typical pin layout above
 #define SS_PIN 10  // Configurable, see typical pin layout above
+#define VSPEED 255
+#define HALF_SPEED 127
 #define LOCKED 'L'
 #define FREE 'F'
 #define OVER 'O'
@@ -23,7 +24,6 @@
 #define MID_SEEN 'M'
 #define END_SEEN 'E'
 
-#define ON_DANGER (mfrc522.uid.uidByte[1] == 0xD3 || mfrc522.uid.uidByte[1] == 0x47 || mfrc522.uid.uidByte[1] == 0x57)
 #define ON_START_LINE (mfrc522.uid.uidByte[1] < 0x68)
 #define ON_MID_LINE (mfrc522.uid.uidByte[1] > 0xCB)
 
@@ -36,12 +36,10 @@ const int motorB1 = 7;
 const int motorB2 = 8;
 const int motorBspeed = 6;
 
-int vspeed = 255, halfSpeed = 127;
-
 
 //Useful Variables
-int signal = 0, timer_i = 0, timer_j = 0, timer_d = 0;
-bool beep = false, danger = false, dangerCrossed = false;
+int signal = 0, timer_i = 0, timer_j = 0;
+bool beep = false;
 
 char gameState[5] = "s";
 char carState = LOCKED, lap = '0';
@@ -55,7 +53,6 @@ RF24 radio(18, 19);  // CE, CSN
 const byte addresses[][6] = { "00001", "00002" };
 
 void setup() {
-  setTime(0);
   // Set pins as outputs:
   pinMode(motorA1, OUTPUT);
   pinMode(motorA2, OUTPUT);
@@ -87,98 +84,103 @@ void loop() {
   if (Serial.available() > 0) {
     signal = Serial.read();
   }
+  //Serial.println(signal);
+  //  //Change speed if signal is equal from 0 to 4. Values must be from 0 to 255 (PWM)
+  //    if (signal == '0'){
+  //      VSPEED=0;}
+  //    else if (signal == '1'){
+  //      VSPEED=100;}
+  //    else if (signal == '2'){
+  //      VSPEED=180;}
+  //    else if (signal == '3'){
+  //      VSPEED=200;}
+  //    else if (signal == '4'){
+  //      VSPEED=255;}
+  //
+  /***********************Forward****************************/
+  //If signal is equal with letter 'F', car will go forward!
+  if (signal == 'F') {
+    digitalWrite(motorA1, LOW);
+    digitalWrite(motorA2, HIGH);
+    digitalWrite(motorB1, LOW);
+    digitalWrite(motorB2, HIGH);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, VSPEED);
+  }
+  /**********************Forward Left************************/
+  //If signal is equal with letter 'G', car will go forward left
+  else if (signal == 'G') {
+    digitalWrite(motorA2, LOW);
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorB2, HIGH);
+    digitalWrite(motorB1, LOW);
+    analogWrite(motorAspeed, HALF_SPEED);
+    analogWrite(motorBspeed, VSPEED);
+  }
+  /**********************Forward Right************************/
+  //If signal is equal with letter 'I', car will go forward right
+  else if (signal == 'I') {
+    digitalWrite(motorA2, HIGH);
+    digitalWrite(motorA1, LOW);
+    digitalWrite(motorB2, LOW);
+    digitalWrite(motorB1, HIGH);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, HALF_SPEED);
+  }
+  /***********************Backward****************************/
+  //If signal is equal with letter 'B', car will go backward
+  else if (signal == 'B') {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, VSPEED);
+  }
+  /**********************Backward Left************************/
+  //If signal is equal with letter 'H', car will go backward left
+  else if (signal == 'H') {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorAspeed, 0);
+    analogWrite(motorBspeed, VSPEED);
+  }
+  /**********************Backward Right************************/
+  //If signal is equal with letter 'J', car will go backward right
+  else if (signal == 'J') {
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorA2, LOW);
+    digitalWrite(motorB1, HIGH);
+    digitalWrite(motorB2, LOW);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, 0);
+  }
+  /***************************Left*****************************/
+  //If signal is equal with letter 'L', wheels will turn left
+  else if (signal == 'L') {
+    digitalWrite(motorA2, LOW);
+    digitalWrite(motorA1, HIGH);
+    digitalWrite(motorB2, HIGH);
+    digitalWrite(motorB1, LOW);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, VSPEED);
+  }
+  /***************************Right*****************************/
+  //If signal is equal with letter 'R', wheels will turn right
+  else if (signal == 'R') {
+    digitalWrite(motorA2, HIGH);
+    digitalWrite(motorA1, LOW);
+    digitalWrite(motorB2, LOW);
+    digitalWrite(motorB1, HIGH);
+    analogWrite(motorAspeed, VSPEED);
+    analogWrite(motorBspeed, VSPEED);
+  }
 
-  if (carState != LOCKED && carState != READY) {
-      /***********************Forward****************************/
-      //If signal is equal with letter 'F', car will go forward!
-      if (signal == 'F') {
-        digitalWrite(motorA1, LOW);
-        digitalWrite(motorA2, HIGH);
-        digitalWrite(motorB1, LOW);
-        digitalWrite(motorB2, HIGH);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, vspeed);
-      }
-      /**********************Forward Left************************/
-      //If signal is equal with letter 'G', car will go forward left
-      else if (signal == 'G') {
-        digitalWrite(motorA2, LOW);
-        digitalWrite(motorA1, HIGH);
-        digitalWrite(motorB2, HIGH);
-        digitalWrite(motorB1, LOW);
-        analogWrite(motorAspeed, halfSpeed);
-        analogWrite(motorBspeed, vspeed);
-      }
-      /**********************Forward Right************************/
-      //If signal is equal with letter 'I', car will go forward right
-      else if (signal == 'I') {
-        digitalWrite(motorA2, HIGH);
-        digitalWrite(motorA1, LOW);
-        digitalWrite(motorB2, LOW);
-        digitalWrite(motorB1, HIGH);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, halfSpeed);
-      }
-      /***********************Backward****************************/
-      //If signal is equal with letter 'B', car will go backward
-      else if (signal == 'B') {
-        digitalWrite(motorA1, HIGH);
-        digitalWrite(motorA2, LOW);
-        digitalWrite(motorB1, HIGH);
-        digitalWrite(motorB2, LOW);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, vspeed);
-      }
-      /**********************Backward Left************************/
-      //If signal is equal with letter 'H', car will go backward left
-      else if (signal == 'H') {
-        digitalWrite(motorA1, HIGH);
-        digitalWrite(motorA2, LOW);
-        digitalWrite(motorB1, HIGH);
-        digitalWrite(motorB2, LOW);
-        analogWrite(motorAspeed, 0);
-        analogWrite(motorBspeed, vspeed);
-      }
-      /**********************Backward Right************************/
-      //If signal is equal with letter 'J', car will go backward right
-      else if (signal == 'J') {
-        digitalWrite(motorA1, HIGH);
-        digitalWrite(motorA2, LOW);
-        digitalWrite(motorB1, HIGH);
-        digitalWrite(motorB2, LOW);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, 0);
-      }
-      /***************************Left*****************************/
-      //If signal is equal with letter 'L', wheels will turn left
-      else if (signal == 'L') {
-        digitalWrite(motorA2, LOW);
-        digitalWrite(motorA1, HIGH);
-        digitalWrite(motorB2, HIGH);
-        digitalWrite(motorB1, LOW);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, vspeed);
-      }
-      /***************************Right*****************************/
-      //If signal is equal with letter 'R', wheels will turn right
-      else if (signal == 'R') {
-        digitalWrite(motorA2, HIGH);
-        digitalWrite(motorA1, LOW);
-        digitalWrite(motorB2, LOW);
-        digitalWrite(motorB1, HIGH);
-        analogWrite(motorAspeed, vspeed);
-        analogWrite(motorBspeed, vspeed);
-      }
-    
-      /************************Stop*****************************/
-      //If signal is equal with letter 'S', stop the car
-      else if (signal == 'S') {
-        analogWrite(motorA1, 0);
-        analogWrite(motorA2, 0);
-        analogWrite(motorB1, 0);
-        analogWrite(motorB2, 0);
-      }
-  } else {
+  /************************Stop*****************************/
+  //If signal is equal with letter 'S', stop the car
+  else if (signal == 'S') {
     analogWrite(motorA1, 0);
     analogWrite(motorA2, 0);
     analogWrite(motorB1, 0);
@@ -216,17 +218,6 @@ void loop() {
     }
   }
 
-  if (danger) {
-    if (timer_d < 350) timer_d++;
-    else {
-      timer_d = 0;
-      vspeed = 255;
-      halfSpeed = 127;
-      danger = false;
-      dangerCrossed = true;
-    }
-  }
-
   if (gameState[0] == GAME_MODE && carState == READY) carState = GAME, lap = '0';
   else if (gameState[0] == FREE_MODE && carState == LOCKED) carState = FREE;
   else if (gameState[0] == READY_STATE && carState == FREE) carState = LOCKED; 
@@ -257,13 +248,7 @@ void loop() {
   // Dump debug info about the card; PICC_HaltA() is automatically called
   digitalWrite(2, HIGH);
   if (gameState[0] == GAME_MODE || gameState[0] == READY_STATE) {
-    if (ON_DANGER) {
-      if (!dangerCrossed && !danger && gameState[0] == GAME_MODE && lap == '1') {
-        vspeed = (second()%2)? 127 : 0;
-        halfSpeed = vspeed? 63 : 0;
-        danger = true;
-      }
-    } else if (ON_START_LINE) {
+    if (ON_START_LINE) {
       if (carState == GAME) carState = START_SEEN, beep = true;
       else if (carState == END_SEEN) carState = START_SEEN, beep = true;
       else if (carState == LOCKED) carState = READY;

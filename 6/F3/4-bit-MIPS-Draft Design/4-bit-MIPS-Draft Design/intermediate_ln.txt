@@ -1,0 +1,29 @@
+0.  addi $sp, $zero, 15
+1.  addi $t1,$zero,3 //comment
+2.  subi $t2,$zero,-2
+3.  add $t0,$t1,$t2 
+4.  sub $t3,$t1,$t2
+5.  nor $t4,$t0, $t2
+6.  sw $t1,3($t2)
+7.  nor $t4,$t0,$t2
+8.  sw $t1,3($t2)
+9.  srl $t2,$t2,1
+10. beq $t2,$t3,label1
+11. j end
+12. label1:sll $t3,$t3,1
+13. lw $t2,4($t2)
+14. subi $sp, $sp, 1
+15. sw $t1,0($sp)
+16. subi $sp, $sp, 1
+17. sw $t2,0($sp)
+18. j label2
+19. or $t0,$t0,$t2
+20. label3:andi $t2,$t4,1
+21. lw $t2,0($sp)
+22. addi $sp, $sp, 1
+23. and $t1,$t2,$t4
+24. lw $t1,0($sp)
+25. addi $sp, $sp, 1
+26. j end
+27. label2:bneq $t0,$t2,label3
+28. end:

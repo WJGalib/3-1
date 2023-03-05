@@ -1,4 +1,4 @@
-CSE310 (Compiler Sessional) 
+# CSE310 (Compiler Sessional) 
 
 The subdirectories F1-F4 in this directory contain the materials submitted as assignemnts that incrementally cover 4 stages of compilation. 
 

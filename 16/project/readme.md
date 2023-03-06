@@ -57,7 +57,7 @@ The cars and the central system:
 
 ![Cars and System](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/hardware.jpg)
 
-The circuit elements (start/middle/end line and power-down pickups): 
+The track elements (start/middle/end line and power-down pickups): 
 
 ![Track Elements](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/track_elements.jpg)
 

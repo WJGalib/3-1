@@ -1,5 +1,5 @@
 # Race
-This directory contains all of the resources related to our CSE316 Microcontroller term project. Our project was a Bluetooth-controlled racing game with two cars. 
+This directory contains all of the resources related to our CSE316 Microcontroller term project. Our project was a Bluetooth-controlled racing game with two cars. Here is a **[demonstration video](https://www.youtube.com/watch?v=mE63gsLWX4w)**.
 
 ![Race Game Setup](https://github.com/WJGalib/3-1/blob/main/16/project/_PROJECT_FINAL/design/game.jpg)
 
